@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.ts",
+  "scripts": {
+    "migrations": "tsx ./Database/MigrationRunner.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx tsx --watch ./Server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.0.1",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^17.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@types/dotenv": "^6.1.1",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.16.3"
+  }
+}
