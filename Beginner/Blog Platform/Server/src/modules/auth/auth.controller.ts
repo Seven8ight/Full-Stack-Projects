@@ -24,8 +24,10 @@ export const authController = (
         case "login":
           if (request.method !== "POST")
             return methodNotAllowed(response, "POST");
-          const loginData = JSON.parse(body);
-          const tokens = await service.login(loginData);
+
+          const loginData = JSON.parse(body),
+            tokens = await service.login(loginData);
+
           response.writeHead(200, { "Content-Type": "application/json" });
           response.end(JSON.stringify(tokens));
           break;
@@ -33,19 +35,24 @@ export const authController = (
         case "register":
           if (request.method !== "POST")
             return methodNotAllowed(response, "POST");
-          const registerData = JSON.parse(body);
-          const newTokens = await service.register(registerData);
+
+          const registerData = JSON.parse(body),
+            newTokens = await service.register(registerData);
+
           response.writeHead(201, { "Content-Type": "application/json" });
           response.end(JSON.stringify(newTokens));
+
           break;
 
         case "refresh":
           if (request.method !== "POST")
             return methodNotAllowed(response, "POST");
-          const { refreshToken } = JSON.parse(body);
-          const refreshed = await service.refresh(refreshToken);
+          const { refreshToken } = JSON.parse(body),
+            refreshed = await service.refresh(refreshToken);
+
           response.writeHead(200, { "Content-Type": "application/json" });
           response.end(JSON.stringify(refreshed));
+
           break;
 
         default:
