@@ -7,7 +7,7 @@ export const CommentController = (
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>
 ) => {
-  const requestUrl = new URL(request.url!, `${request.headers.host}`),
+  const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     params = requestUrl.pathname.split("/").filter(Boolean);
 
   const commentRepo: CommentRepository = new CommentRepository(pgClient),

@@ -12,7 +12,7 @@ export const userController = (
   request: AuthenticatedRequest,
   response: ServerResponse<IncomingMessage>
 ) => {
-  const requestUrl = new URL(request.url!, `${request.headers.host}`),
+  const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     params = requestUrl.pathname.split("/").filter(Boolean);
 
   let body = "";
