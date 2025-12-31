@@ -9,7 +9,7 @@ export class PostRepository implements PostRepo {
 
     try {
       const newPost: QueryResult<Post> = await this.pgClient.query(
-        "INSERT INTO posts(title,slug,content,published,author_id VALUES($1,$2,$3,$4,$5) RETURNING *",
+        "INSERT INTO posts(title,slug,content,published,author_id) VALUES($1,$2,$3,$4,$5) RETURNING *",
         [title, slug, content, true, author_id]
       );
 
