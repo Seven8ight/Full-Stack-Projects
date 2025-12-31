@@ -1,4 +1,9 @@
 // src/modules/auth/auth.types.ts
+import { type IncomingMessage } from "node:http";
+
+export interface AuthenticatedRequest extends IncomingMessage {
+  user: TokenPayload;
+}
 
 export type RegisterDTO = {
   username: string;
@@ -17,6 +22,6 @@ export type AuthTokens = {
 };
 
 export type TokenPayload = {
-  sub: string; // user id
+  userId: string; // user id
   role: "user" | "admin";
 };

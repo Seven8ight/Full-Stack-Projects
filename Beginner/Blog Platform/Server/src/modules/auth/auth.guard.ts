@@ -1,12 +1,7 @@
 // src/modules/auth/auth.guard.ts
 
-import type { IncomingMessage } from "http";
 import { verifyAccessToken } from "./../../utils/Jwt.js";
-import type { TokenPayload } from "./auth.types.js";
-
-export interface AuthenticatedRequest extends IncomingMessage {
-  user: TokenPayload;
-}
+import type { TokenPayload, AuthenticatedRequest } from "./auth.types.js";
 
 export function authenticate(req: AuthenticatedRequest) {
   const authHeader = req.headers["authorization"];
