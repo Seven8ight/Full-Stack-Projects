@@ -22,7 +22,8 @@ export class PostRepository implements PostRepo {
   }
 
   async editPost(newPostDetails: updatePostDTO): Promise<Post> {
-    const { author_id } = newPostDetails;
+    const { author_id } = newPostDetails,
+      date = new Date();
 
     let keys: string[] = [],
       values: any[] = [],
@@ -34,6 +35,9 @@ export class PostRepository implements PostRepo {
       keys.push(`${key}=$${parsedIndex++}`);
       values.push(value);
     }
+
+    keys.push(`updated_at=$${parsedIndex++}`);
+    values.push(date.toUTCString());
 
     try {
       const updateQuery: QueryResult<Post> = await this.pgClient.query(

@@ -31,6 +31,8 @@ export class UserRepository implements UserRepo {
     newUserDetails: Partial<User>
   ): Promise<userDTO | null> {
     try {
+      const date = new Date();
+
       let keys: string[] = [],
         values: any[] = [],
         paramIndex = 2;
@@ -39,6 +41,9 @@ export class UserRepository implements UserRepo {
         keys.push(`${key}=$${paramIndex++}`);
         values.push(value);
       }
+
+      keys.push(`updated_at=$${paramIndex++}`);
+      values.push(date.toUTCString());
 
       const editQuery: QueryResult<User> = await this.db.query(
         `UPDATE users SET ${keys.join(", ")} WHERE id=$1 RETURNING *`,
