@@ -24,7 +24,19 @@ export const generateTokens = (payload: Object) => {
       return verifier;
     } catch (error) {
       process.stdout.write(
-        `JWT access token verification error: ${(error as Error).message}`
+        `JWT access token verification error: ${(error as Error).message}\n`
+      );
+      return null;
+    }
+  },
+  verifyRefreshToken = (refreshToken: string): Object | null => {
+    try {
+      const verifier = JWT.verify(refreshToken, jwtPrivateRefreshSignature!);
+
+      return verifier;
+    } catch (error) {
+      process.stdout.write(
+        `JWT access token verification error: ${(error as Error).message}\n`
       );
       return null;
     }
@@ -33,10 +45,22 @@ export const generateTokens = (payload: Object) => {
     try {
       const verifier = JWT.verify(refreshToken, jwtPrivateRefreshSignature!);
 
-      return generateTokens(verifier);
+      if (verifier) {
+        const payload = {
+            sub: (verifier as any).sub,
+            role: (verifier as any).role,
+          },
+          newAToken = JWT.sign(payload, jwtPrivateAccessSignature!, {
+            expiresIn: "15m",
+          });
+
+        return { accessToken: newAToken };
+      }
+
+      return null;
     } catch (error) {
       process.stdout.write(
-        `JWT access token verification error: ${(error as Error).message}`
+        `JWT access token verification error: ${(error as Error).message}\n`
       );
       return null;
     }
