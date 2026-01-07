@@ -18,8 +18,8 @@ export class CommentService implements CommentService {
     }
 
     try {
-      for (let [key, _] of Object.entries(comment))
-        if (key.length > 0)
+      for (let [key, value] of Object.entries(comment))
+        if (value.length < 0)
           throw new Error(`${key} has an empty value! Provide a value`);
 
       return await this.commentRepo.createComment(comment);

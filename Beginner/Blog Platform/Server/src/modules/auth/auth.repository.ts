@@ -16,10 +16,14 @@ export class AuthRepository {
     return result.rows[0] || null;
   }
 
-  async storeRefreshToken(userId: string, refreshToken: string) {
+  async storeRefreshToken(
+    userId: string,
+    refreshToken: string,
+    expires_at: string
+  ) {
     await this.db.query(
-      "INSERT INTO refresh_tokens(user_id, token) VALUES($1, $2)",
-      [userId, refreshToken]
+      "INSERT INTO refresh_tokens(user_id, token, expires_at) VALUES($1, $2, $3)",
+      [userId, refreshToken, expires_at]
     );
   }
 

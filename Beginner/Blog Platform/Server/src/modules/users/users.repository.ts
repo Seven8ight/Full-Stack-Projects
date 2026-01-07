@@ -1,11 +1,13 @@
 import type { Client, QueryResult } from "pg";
 import { error as ErrorLog } from "../../utils/logger.js";
+import bcrypt from "bcryptjs";
 import {
   type UserRepo,
   type User,
   type userDTO,
   type PublicUser,
 } from "./users.types.js";
+import { hashPassword } from "../auth/password.js";
 
 export class UserRepository implements UserRepo {
   constructor(private db: Client) {}
@@ -29,7 +31,7 @@ export class UserRepository implements UserRepo {
   async editUser(
     userId: string,
     newUserDetails: Partial<User>
-  ): Promise<userDTO | null> {
+  ): Promise<Omit<userDTO, "password" | "created_at" | "updated_at"> | null> {
     try {
       const date = new Date();
 
@@ -38,6 +40,8 @@ export class UserRepository implements UserRepo {
         paramIndex = 2;
 
       for (let [key, value] of Object.entries(newUserDetails)) {
+        if (key.toLowerCase() == "password") value = await hashPassword(value);
+
         keys.push(`${key}=$${paramIndex++}`);
         values.push(value);
       }
@@ -52,7 +56,8 @@ export class UserRepository implements UserRepo {
 
       if (editQuery.rowCount == 0) return null;
 
-      return editQuery.rows[0] as userDTO;
+      const { id, email, username, role } = editQuery.rows[0] as userDTO;
+      return { id, email, username, role };
     } catch (error) {
       ErrorLog(`Create user error: ${(error as Error).message}`);
       return null;
@@ -87,8 +92,12 @@ export class UserRepository implements UserRepo {
         [email]
       );
 
-      if (getUserQuery.rowCount && getUserQuery.rowCount > 0)
-        return getUserQuery.rows[0] as userDTO;
+      if (getUserQuery.rowCount && getUserQuery.rowCount > 0) {
+        const { username, id, email, role } = getUserQuery
+          .rows[0] as PublicUser;
+
+        return { id, username, email, role };
+      }
 
       return null;
     } catch (error) {

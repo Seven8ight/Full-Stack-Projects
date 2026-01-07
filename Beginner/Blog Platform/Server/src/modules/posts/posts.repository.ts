@@ -21,13 +21,13 @@ export class PostRepository implements PostRepo {
     }
   }
 
-  async editPost(newPostDetails: updatePostDTO): Promise<Post> {
+  async editPost(postId: string, newPostDetails: updatePostDTO): Promise<Post> {
     const { author_id } = newPostDetails,
       date = new Date();
 
     let keys: string[] = [],
       values: any[] = [],
-      parsedIndex = 2;
+      parsedIndex = 3;
 
     for (let [key, value] of Object.entries(newPostDetails)) {
       if (key == "author_id" || key == "id") continue;
@@ -41,8 +41,10 @@ export class PostRepository implements PostRepo {
 
     try {
       const updateQuery: QueryResult<Post> = await this.pgClient.query(
-        `UPDATE posts SET ${keys.join(", ")} WHERE author_id=$1 RETURNING *`,
-        [author_id, ...values]
+        `UPDATE posts SET ${keys.join(
+          ", "
+        )} WHERE author_id=$1 AND id=$2 RETURNING *`,
+        [author_id, postId, ...values]
       );
 
       if (updateQuery.rowCount && updateQuery.rowCount > 0)

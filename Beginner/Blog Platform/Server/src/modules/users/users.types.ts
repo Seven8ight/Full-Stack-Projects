@@ -27,7 +27,7 @@ export interface UserRepo {
   editUser: (
     userId: string,
     newUserDetails: Partial<User>
-  ) => Promise<userDTO | null>;
+  ) => Promise<Omit<userDTO, "password" | "created_at" | "updated_at"> | null>;
   findByEmail: (email: string) => Promise<PublicUser | null>;
   findById: (userId: string) => Promise<PublicUser | null>;
   deleteUser: (userId: string) => Promise<boolean>;

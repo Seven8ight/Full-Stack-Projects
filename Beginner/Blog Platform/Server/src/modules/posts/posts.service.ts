@@ -33,7 +33,7 @@ export class PostService implements PostServ {
     throw new Error(errorMsg);
   }
 
-  async editPost(newPostDetails: updatePostDTO): Promise<Post> {
+  async editPost(postId: string, newPostDetails: updatePostDTO): Promise<Post> {
     if (!newPostDetails.author_id) throw new Error("Author id not provided");
 
     let acceptedFields: updatePostDTO = {
@@ -50,7 +50,7 @@ export class PostService implements PostServ {
       acceptedFields[key as keyof updatePostDTO] = value;
     }
 
-    return await this.postRepo.editPost(acceptedFields);
+    return await this.postRepo.editPost(postId, acceptedFields);
   }
 
   async getAuthorPost(authorId: string, postId: string): Promise<Post> {
@@ -83,7 +83,7 @@ export class PostService implements PostServ {
       throw new Error("Author id and post id must be provided");
 
     try {
-      return await this.deleteAuthorPost(authorId, postId);
+      return await this.postRepo.deleteAuthorPost(authorId, postId);
     } catch (error) {
       throw error;
     }
@@ -93,7 +93,7 @@ export class PostService implements PostServ {
     if (!authorId) throw new Error("Author id must be provided");
 
     try {
-      return await this.deleteAllAuthorPost(authorId);
+      return await this.postRepo.deleteAllAuthorPost(authorId);
     } catch (error) {
       throw error;
     }

@@ -21,7 +21,7 @@ export type updatePostDTO = Pick<PostDTO, "author_id"> &
 
 export interface PostRepo {
   createPost: (postDetails: PostDTO) => Promise<Post>;
-  editPost: (newPostDetails: updatePostDTO) => Promise<Post>;
+  editPost: (postId: string, newPostDetails: updatePostDTO) => Promise<Post>;
   getAuthorPost: (authorId: string, postId: string) => Promise<Post>;
   getAllAuthorPosts: (authorId: string) => Promise<Post[]>;
   getAllPosts: () => Promise<Post[]>;
@@ -31,7 +31,7 @@ export interface PostRepo {
 
 export interface PostServ {
   addPost: (postDetails: PostDTO) => Promise<Post>;
-  editPost: (newPostDetails: updatePostDTO) => Promise<Post>;
+  editPost: (postId: string, newPostDetails: updatePostDTO) => Promise<Post>;
   getAuthorPost: (authorId: string, postId: string) => Promise<Post>;
   getAllAuthorPosts: (authorId: string) => Promise<Post[]>;
   getAllPosts: () => Promise<Post[]>;

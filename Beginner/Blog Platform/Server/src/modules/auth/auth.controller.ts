@@ -1,5 +1,3 @@
-// src/modules/auth/auth.controller.ts
-
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { AuthService } from "./auth.service.js";
 import { AuthRepository } from "./auth.repository.js";
@@ -20,46 +18,49 @@ export const authController = (
 
   request.on("end", async () => {
     try {
-      switch (path[1]) {
-        case "login":
+      const action = path[1];
+
+      switch (action) {
+        case "login": {
           if (request.method !== "POST")
             return methodNotAllowed(response, "POST");
 
-          const loginData = JSON.parse(body),
-            tokens = await service.login(loginData);
+          const loginData = JSON.parse(body || "{}");
+          const tokens = await service.login(loginData);
 
           response.writeHead(200, { "Content-Type": "application/json" });
-          response.end(JSON.stringify(tokens));
-          break;
+          return response.end(JSON.stringify(tokens));
+        }
 
-        case "register":
+        case "register": {
           if (request.method !== "POST")
             return methodNotAllowed(response, "POST");
 
-          const registerData = JSON.parse(body),
-            newTokens = await service.register(registerData);
+          const registerData = JSON.parse(body || "{}");
+          const newTokens = await service.register(registerData);
 
           response.writeHead(201, { "Content-Type": "application/json" });
-          response.end(JSON.stringify(newTokens));
+          return response.end(JSON.stringify(newTokens));
+        }
 
-          break;
-
-        case "refresh":
+        case "refresh": {
           if (request.method !== "POST")
             return methodNotAllowed(response, "POST");
-          const { refreshToken } = JSON.parse(body),
-            refreshed = await service.refresh(refreshToken);
+
+          const { refreshToken } = JSON.parse(body || "{}");
+          const refreshed = await service.refresh(refreshToken);
 
           response.writeHead(200, { "Content-Type": "application/json" });
-          response.end(JSON.stringify(refreshed));
-
-          break;
+          return response.end(JSON.stringify(refreshed));
+        }
 
         default:
-          response.writeHead(404);
-          response.end(JSON.stringify({ message: "Route not found" }));
+          response.writeHead(404, { "Content-Type": "application/json" });
+          return response.end(JSON.stringify({ message: "Route not found" }));
       }
     } catch (err) {
+      if (response.writableEnded || response.headersSent) return;
+
       response.writeHead(400, { "Content-Type": "application/json" });
       response.end(JSON.stringify({ error: (err as Error).message }));
     }
@@ -67,6 +68,9 @@ export const authController = (
 };
 
 function methodNotAllowed(res: ServerResponse, method: string) {
+  // Check if response is already finished to be safe
+  if (res.writableEnded) return;
+
   res.writeHead(405, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ message: `Use ${method}` }));
 }

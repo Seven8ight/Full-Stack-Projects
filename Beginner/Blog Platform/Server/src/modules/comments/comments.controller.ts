@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { CommentRepository } from "./comments.repository.js";
 import { CommentService } from "./comments.service.js";
 import { pgClient } from "../../../Config/Db.js";
+import { authenticateUser } from "../../middleware/Authentication.js";
 
 export const CommentController = (
   request: IncomingMessage,
@@ -13,7 +14,8 @@ export const CommentController = (
   const commentRepo: CommentRepository = new CommentRepository(pgClient),
     commentService: CommentService = new CommentService(commentRepo);
 
-  let unParsedRequestBody = "";
+  let unParsedRequestBody = "",
+    user = authenticateUser(request);
 
   request.on(
     "data",
@@ -21,9 +23,13 @@ export const CommentController = (
   );
 
   request.on("end", async () => {
-    const parsedRequestBody = JSON.parse(unParsedRequestBody);
+    const parsedRequestBody = JSON.parse(unParsedRequestBody),
+      userRequestBody = {
+        author_id: (user as any).sub,
+        ...parsedRequestBody,
+      };
 
-    switch (params[2]) {
+    switch (params[1]) {
       case "create":
         if (request.method != "POST") {
           response.writeHead(405);
@@ -36,7 +42,7 @@ export const CommentController = (
 
         try {
           const createRequest = await commentService.createComment(
-            parsedRequestBody
+            userRequestBody
           );
 
           response.writeHead(201);
@@ -61,9 +67,7 @@ export const CommentController = (
         }
 
         try {
-          const editRequest = await commentService.editComment(
-            parsedRequestBody
-          );
+          const editRequest = await commentService.editComment(userRequestBody);
 
           response.writeHead(201);
           response.end(JSON.stringify(editRequest));

@@ -14,7 +14,7 @@ export class CommentRepository implements CommentRepo {
 
     try {
       const newPost: QueryResult<Comment> = await this.pgClient.query(
-        "INSERT INTO comment(post_id,content,author_id) VALUES($1,$2,$3) RETURNING *",
+        "INSERT INTO comments(post_id,content,author_id) VALUES($1,$2,$3) RETURNING *",
         [post_id, content, author_id]
       );
 
@@ -32,7 +32,7 @@ export class CommentRepository implements CommentRepo {
 
     try {
       const updatedComment = await this.pgClient.query(
-        "UPDATE comments SET comment=$1,updated_at=$2 WHERE id=$3 RETURNING *",
+        "UPDATE comments SET content=$1,updated_at=$2 WHERE id=$3 RETURNING *",
         [content, date.toUTCString(), id]
       );
 
@@ -62,7 +62,7 @@ export class CommentRepository implements CommentRepo {
   async deleteComment(commentId: string): Promise<boolean> {
     try {
       const deleteQuery = await this.pgClient.query(
-        "DELETE FROM comment WHERE id=$1",
+        "DELETE FROM comments WHERE id=$1",
         [commentId]
       );
 
@@ -76,7 +76,7 @@ export class CommentRepository implements CommentRepo {
   async deleteUserComments(authorId: string): Promise<boolean> {
     try {
       const deleteQuery = await this.pgClient.query(
-        "DELETE FROM comment WHERE author_id=$1",
+        "DELETE FROM comments WHERE author_id=$1",
         [authorId]
       );
 
