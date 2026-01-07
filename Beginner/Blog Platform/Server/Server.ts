@@ -10,7 +10,7 @@ Server.listen(SERVER_PORT, async () => {
   try {
     await connectDb();
 
-    info(`Server and database live, server live at port, ${SERVER_PORT}`);
+    info(`Server and database are live, server live at port, ${SERVER_PORT}`);
   } catch (error) {
     warning(`Server live at port, ${SERVER_PORT}, database is down!`);
     Error(`${(error as Error).message}`);
