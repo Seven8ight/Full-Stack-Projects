@@ -5,7 +5,8 @@ Each project contains its own readme file.
 
 ## Beginner Projects
 
-1. Blog Platform
+1. To-do list
+2. Blog platform
 
 ## Intermediate Projects
 
