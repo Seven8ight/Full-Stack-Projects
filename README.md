@@ -1,6 +1,6 @@
 # Full Stack Projects
 
-Contains various full stack projects created mostly using node js, nextJS and expo for both mobile and web functionality.
+Contains various full stack projects created mostly using node js, nextJS and expo for mobile and web functionality respectively.
 Each project contains its own readme file.
 
 ## Beginner Projects
