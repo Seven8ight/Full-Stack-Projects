@@ -1,4 +1,4 @@
-import { errorMsg, warningMsg } from "../../Utils/Logger.js";
+import { warningMsg } from "../../Utils/Logger.js";
 import type {
   createUserDTO,
   createUserType,
@@ -47,7 +47,10 @@ export class UserService implements Userservice {
       newUserObject["oauthProvider"] = userType.provider;
 
     try {
-      const newUser: User = await this.UserRepo.createUser(userData, userType);
+      const newUser: User = await this.UserRepo.createUser(
+        newUserObject as any,
+        userType
+      );
 
       return this.createPublicUser(newUser);
     } catch (error) {
