@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS users(
     password TEXT,
     profile_image TEXT,
     oauth BOOLEAN DEFAULT FALSE,
-    oauthprovider TEXT,
+    oauthprovider TEXT
 );

@@ -6,7 +6,7 @@ import type {
   User,
   UserRepo,
 } from "./users.types.js";
-import { warningMsg } from "../../Utils/Logger.js";
+import { errorMsg, warningMsg } from "../../Utils/Logger.js";
 
 export class UserRepository implements UserRepo {
   constructor(private pgClient: Client) {}
@@ -17,7 +17,7 @@ export class UserRepository implements UserRepo {
 
       if (userType.type == "legacy") {
         newUser = await this.pgClient.query(
-          `INSERT INTO user(username,email,password,profile_image,oauth) RETURNING *`,
+          `INSERT INTO users(username,email,password,profile_image,oauth) VALUES($1,$2,$3,$4,$5) RETURNING *`,
           [
             userData.username,
             userData.email,
@@ -44,6 +44,7 @@ export class UserRepository implements UserRepo {
 
       throw new Error("New user not created, try again");
     } catch (error) {
+      errorMsg(`${(error as Error).message}`);
       warningMsg(`Error at creating user repo`);
       throw error;
     }

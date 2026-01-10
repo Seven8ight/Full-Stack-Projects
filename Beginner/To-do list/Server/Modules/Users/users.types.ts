@@ -9,7 +9,7 @@ export type User = {
 };
 
 export type createUserDTO = Pick<User, "username" | "email"> & Partial<User>;
-export type createUserType = { type: "legacy" | "oAuth"; provider: string };
+export type createUserType = { type: "legacy" | "oAuth"; provider?: string };
 
 export type PublicUser = Omit<User, "password" | "oAuth" | "oAuthProvider">;
 

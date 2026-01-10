@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 import URL from "url";
-import { pgClient } from "../Config/Database.js";
-import { errorMsg, info } from "../Utils/Logger.js";
+import { connectToDatabase, pgClient } from "../Config/Database.js";
+import { errorMsg, info, warningMsg } from "../Utils/Logger.js";
 
 const __filename = URL.fileURLToPath(import.meta.url),
   __dirname = path.dirname(__filename),
@@ -10,6 +10,8 @@ const __filename = URL.fileURLToPath(import.meta.url),
 
 (async () => {
   try {
+    await connectToDatabase();
+
     const sqlFiles = (await fs.readdir(migrationsDir))
       .sort()
       .filter((file) => file.endsWith(".sql"));
@@ -22,6 +24,16 @@ const __filename = URL.fileURLToPath(import.meta.url),
         }
       );
 
+      const tableExists = await pgClient.query(
+        "SELECT * FROM migrations WHERE table_name=$1",
+        [sqlFile]
+      );
+
+      if (tableExists.rowCount && tableExists.rowCount > 0) {
+        info(`${sqlFile} already created, skipping....`);
+        continue;
+      }
+
       await pgClient.query(sqlFileCommands);
 
       await pgClient.query("INSERT INTO migrations(table_name) VALUES($1)", [
@@ -32,8 +44,11 @@ const __filename = URL.fileURLToPath(import.meta.url),
     }
 
     info("Migrations complete");
+    process.exit(0);
   } catch (error) {
+    warningMsg("Error at creating tables");
     errorMsg((error as Error).message);
+
     await pgClient.query("ROLLBACK");
   }
 })();

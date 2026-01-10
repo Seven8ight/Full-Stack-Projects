@@ -1,4 +1,4 @@
-import { warningMsg } from "../../Utils/Logger.js";
+import { errorMsg, warningMsg } from "../../Utils/Logger.js";
 import type {
   createUserDTO,
   createUserType,
@@ -17,7 +17,7 @@ export class UserService implements Userservice {
       id: userData.id,
       username: userData.username,
       email: userData.email,
-      profileImage: userData.profileImage,
+      profileImage: (userData as any).profile_image,
     };
   }
 

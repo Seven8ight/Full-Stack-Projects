@@ -13,4 +13,4 @@ export const pgClient = new pg.Client({
   password: POSTGRES_PASSWORD,
 });
 
-export const connectDatabase = async () => await pgClient.connect();
+export const connectToDatabase = async () => await pgClient.connect();
