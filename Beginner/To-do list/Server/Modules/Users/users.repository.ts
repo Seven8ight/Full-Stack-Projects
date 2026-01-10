@@ -2,11 +2,14 @@ import type { Client, QueryResult } from "pg";
 import type {
   createUserDTO,
   createUserType,
+  loginType,
+  tokens,
   updateUserDTO,
   User,
   UserRepo,
 } from "./users.types.js";
 import { errorMsg, warningMsg } from "../../Utils/Logger.js";
+import { comparePasswordAndHash, hashPassword } from "../../Utils/Password.js";
 
 export class UserRepository implements UserRepo {
   constructor(private pgClient: Client) {}
@@ -16,23 +19,24 @@ export class UserRepository implements UserRepo {
       let newUser: QueryResult<User>;
 
       if (userType.type == "legacy") {
+        const hashedPassword = hashPassword(userData.password as string);
+
         newUser = await this.pgClient.query(
           `INSERT INTO users(username,email,password,profile_image,oauth) VALUES($1,$2,$3,$4,$5) RETURNING *`,
           [
             userData.username,
             userData.email,
-            userData.password,
+            hashedPassword,
             userData.profileImage,
             false,
           ]
         );
       } else {
         newUser = await this.pgClient.query(
-          `INSERT INTO user(username,email,password,profile_image,oauth,oauth_provider) RETURNING *`,
+          `INSERT INTO user(username,email,profile_image,oauth,oauth_provider) RETURNING *`,
           [
             userData.username,
             userData.email,
-            userData.password,
             userData.profileImage,
             true,
             userData.oAuthProvider,
@@ -46,6 +50,33 @@ export class UserRepository implements UserRepo {
     } catch (error) {
       errorMsg(`${(error as Error).message}`);
       warningMsg(`Error at creating user repo`);
+      throw error;
+    }
+  }
+
+  async loginUser(userData: createUserDTO, type: loginType) {
+    try {
+      const findUser: QueryResult<User> = await this.pgClient.query(
+        "SELECT * FROM users WHERE email=$1 or username=$2",
+        [userData.email, userData.username]
+      );
+
+      if (findUser.rowCount && findUser.rowCount > 0) {
+        if (type == "legacy") {
+          if (
+            !comparePasswordAndHash(
+              findUser.rows[0]?.password as string,
+              userData.password as string
+            )
+          )
+            throw new Error("Invalid password");
+        }
+        return findUser.rows[0] as User;
+      }
+      throw new Error("No user exists of such username or email");
+    } catch (error) {
+      warningMsg("Error at login repo");
+      errorMsg(`${(error as Error).message}`);
       throw error;
     }
   }

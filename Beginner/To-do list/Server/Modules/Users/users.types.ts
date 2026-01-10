@@ -8,8 +8,15 @@ export type User = {
   oAuthProvider: string;
 };
 
+export type tokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 export type createUserDTO = Pick<User, "username" | "email"> & Partial<User>;
+
 export type createUserType = { type: "legacy" | "oAuth"; provider?: string };
+export type loginType = "google" | "legacy";
 
 export type PublicUser = Omit<User, "password" | "oAuth" | "oAuthProvider">;
 
@@ -20,6 +27,7 @@ export type updateUserDTO = Omit<
 
 export interface UserRepo {
   createUser: (userData: createUserDTO, type: createUserType) => Promise<User>;
+  loginUser: (userData: createUserDTO, type: loginType) => Promise<User>;
   editUser: (userId: string, newUserData: updateUserDTO) => Promise<User>;
   getUser: (userId: string) => Promise<User>;
   deleteUser: (userId: string) => Promise<void>;
@@ -30,6 +38,7 @@ export interface Userservice {
     userData: createUserDTO,
     type: createUserType
   ) => Promise<PublicUser>;
+  loginUser: (userData: createUserDTO, type: loginType) => Promise<tokens>;
   editUser: (userId: string, newUserData: updateUserDTO) => Promise<PublicUser>;
   getUser: (userId: string) => Promise<PublicUser>;
   deleteUser: (userId: string) => Promise<void>;

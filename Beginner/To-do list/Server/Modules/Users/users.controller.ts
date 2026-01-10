@@ -16,7 +16,10 @@ export const UserController = (
   let unparsedRequestBody: string = "",
     userId: string = "";
 
-  if (!pathNames.includes("create") && !authorization) {
+  if (
+    (!pathNames.includes("create") || !pathNames.includes("login")) &&
+    !authorization
+  ) {
     response.writeHead(401);
     response.end(
       JSON.stringify({
@@ -26,7 +29,7 @@ export const UserController = (
     return;
   }
 
-  if (!pathNames.includes("create")) {
+  if (!pathNames.includes("create") || !pathNames.includes("login")) {
     const userVerifier = verifyAccessToken(
       authorization?.split(" ")[1] as string
     );
@@ -87,6 +90,27 @@ export const UserController = (
           }
 
           break;
+        case "login":
+          if (pathNames[3] == "legacy") {
+            if (request.method !== "POST") {
+              response.writeHead(405);
+              response.end(
+                JSON.stringify({
+                  error: "Use Post instead on this route",
+                })
+              );
+              return;
+            }
+
+            const loginUser = await Userservice.loginUser(
+              parsedRequestBody,
+              "legacy"
+            );
+
+            response.writeHead(200);
+            response.end(JSON.stringify(loginUser));
+          } else {
+          }
         case "edit":
           if (request.method != "PATCH") {
             response.writeHead(405);

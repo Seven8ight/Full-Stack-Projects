@@ -46,7 +46,7 @@ export class TodoRepository implements ToDoInterface {
       if (todoUpdate.rowCount && todoUpdate.rowCount > 0)
         return todoUpdate.rows[0]!;
 
-      throw new Error(`Todo item does not exist of id, ${todoId}`);
+      throw new Error(`Todo item does not exist of id, ${newTodo.id}`);
     } catch (error) {
       warningMsg("Edit todo repo error occurred");
       throw error;

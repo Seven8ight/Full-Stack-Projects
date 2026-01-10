@@ -1,8 +1,11 @@
+import { generateTokens } from "../../Utils/Jwt.js";
 import { warningMsg } from "../../Utils/Logger.js";
 import type {
   createUserDTO,
   createUserType,
+  loginType,
   PublicUser,
+  tokens,
   updateUserDTO,
   User,
   UserRepo,
@@ -19,6 +22,18 @@ export class UserService implements Userservice {
       email: userData.email,
       profileImage: (userData as any).profile_image,
     };
+  }
+
+  async loginUser(userData: createUserDTO, type: loginType) {
+    try {
+      const loginProcess = await this.UserRepo.loginUser(userData, type),
+        publicUser = this.createPublicUser(loginProcess),
+        userTokens = generateTokens(publicUser);
+
+      return userTokens;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async createUser(userData: createUserDTO, userType: createUserType) {
