@@ -17,7 +17,8 @@ export const UserController = (
     userId: string = "";
 
   if (
-    (!pathNames.includes("create") || !pathNames.includes("login")) &&
+    !pathNames.includes("create") &&
+    !pathNames.includes("login") &&
     !authorization
   ) {
     response.writeHead(401);
@@ -29,7 +30,7 @@ export const UserController = (
     return;
   }
 
-  if (!pathNames.includes("create") || !pathNames.includes("login")) {
+  if (!pathNames.includes("create") && !pathNames.includes("login")) {
     const userVerifier = verifyAccessToken(
       authorization?.split(" ")[1] as string
     );
@@ -60,57 +61,6 @@ export const UserController = (
       const parsedRequestBody: any = JSON.parse(unparsedRequestBody);
 
       switch (pathNames[2]) {
-        case "create":
-          if (pathNames[3] == "legacy") {
-            if (request.method !== "POST") {
-              response.writeHead(405);
-              response.end(
-                JSON.stringify({
-                  error: "Use Post instead on this route",
-                })
-              );
-              return;
-            }
-
-            const createUser = await Userservice.createUser(parsedRequestBody, {
-                type: "legacy",
-              }),
-              newUserTokens = generateTokens(createUser);
-
-            response.writeHead(201);
-            response.end(JSON.stringify(newUserTokens));
-          } else if (pathNames[3] == "google") {
-          } else {
-            response.writeHead(404);
-            response.end(
-              JSON.stringify({
-                error: "Specify path either legacy or google",
-              })
-            );
-          }
-
-          break;
-        case "login":
-          if (pathNames[3] == "legacy") {
-            if (request.method !== "POST") {
-              response.writeHead(405);
-              response.end(
-                JSON.stringify({
-                  error: "Use Post instead on this route",
-                })
-              );
-              return;
-            }
-
-            const loginUser = await Userservice.loginUser(
-              parsedRequestBody,
-              "legacy"
-            );
-
-            response.writeHead(200);
-            response.end(JSON.stringify(loginUser));
-          } else {
-          }
         case "edit":
           if (request.method != "PATCH") {
             response.writeHead(405);
@@ -142,6 +92,7 @@ export const UserController = (
             );
             return;
           }
+
           const userBody = await Userservice.getUser(userId);
 
           response.writeHead(200);

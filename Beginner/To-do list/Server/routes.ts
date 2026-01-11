@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { UserController } from "./Modules/Users/users.controller.js";
 import { TodoController } from "./Modules/Todos/todos.controller.js";
+import { AuthController } from "./Modules/Auth/auth.controller.js";
 
 type Route = {
   pathname: string;
@@ -19,6 +20,10 @@ export default function Routes(): Route[] {
     {
       pathname: "todos",
       controller: TodoController,
+    },
+    {
+      pathname: "auth",
+      controller: AuthController,
     },
   ];
 }

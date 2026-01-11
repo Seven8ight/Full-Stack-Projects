@@ -34,7 +34,7 @@ export class TodoService implements ToDoInterface {
   }
 
   async editTodo(newTodo: updateTodo) {
-    if (!newTodo.id) throw new Error("User id not provided for editing");
+    if (!newTodo.id) throw new Error("Todo id not provided for editing");
 
     try {
       const allowedFields: string[] = [
@@ -52,6 +52,8 @@ export class TodoService implements ToDoInterface {
 
         newTodoObject[key] = value;
       }
+
+      newTodoObject["id"] = newTodo.id;
 
       const updatedTodo = await this.todoRepo.editTodo(
         newTodoObject as updateTodo
@@ -73,7 +75,7 @@ export class TodoService implements ToDoInterface {
 
       return retrieveTodo;
     } catch (error) {
-      warningMsg("Get user service error occurred");
+      warningMsg("Get todo service error occurred");
       throw error;
     }
   }

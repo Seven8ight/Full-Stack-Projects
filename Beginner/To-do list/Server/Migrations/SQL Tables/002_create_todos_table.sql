@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS todos(
     content TEXT NOT NULL,
     category TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
-    todo_status TEXT DEFAULT 'incomplete'
+    status TEXT DEFAULT 'incomplete'
 );

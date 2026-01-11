@@ -13,7 +13,7 @@ export class TodoRepository implements ToDoInterface {
   async createTodo(userId: string, todoData: createTodo) {
     try {
       const todoItem: QueryResult<Todo> = await this.pgClient.query(
-        `INSERT INTO todos(title,content,category,user_id,created) VALUES($1,$2,$3,$4) RETURNING *`,
+        `INSERT INTO todos(title,content,category,user_id) VALUES($1,$2,$3,$4) RETURNING *`,
         [todoData.title, todoData.content, todoData.category, userId]
       );
 
@@ -32,7 +32,7 @@ export class TodoRepository implements ToDoInterface {
       let keys: string[] = [],
         values: string[] = [],
         paramIndex = 2;
-
+      console.log(newTodo);
       for (let [key, value] of Object.entries(newTodo)) {
         keys.push(`${key}=$${paramIndex++}`);
         values.push(value);
@@ -62,9 +62,9 @@ export class TodoRepository implements ToDoInterface {
 
       if (todoRetrieval.rowCount && todoRetrieval.rowCount > 0)
         return todoRetrieval.rows[0]!;
-      throw new Error("User does not exist");
+      throw new Error("Todo does not exist");
     } catch (error) {
-      warningMsg("Get user repo error occurred");
+      warningMsg("Get todo repo error occurred");
       throw error;
     }
   }
@@ -72,15 +72,15 @@ export class TodoRepository implements ToDoInterface {
   async getTodos(userId: string) {
     try {
       const todosRetrieval: QueryResult<Todo> = await this.pgClient.query(
-        "SELECT * FROM todos WHERE id=$1",
+        "SELECT * FROM todos WHERE user_id=$1",
         [userId]
       );
 
       if (todosRetrieval.rowCount && todosRetrieval.rowCount > 0)
         return todosRetrieval.rows;
-      throw new Error("User does not exist");
+      throw new Error("todos does not exist");
     } catch (error) {
-      warningMsg("Get user repo error occurred");
+      warningMsg("Get todos repo error occurred");
       throw error;
     }
   }

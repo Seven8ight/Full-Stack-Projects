@@ -26,19 +26,12 @@ export type updateUserDTO = Omit<
 >;
 
 export interface UserRepo {
-  createUser: (userData: createUserDTO, type: createUserType) => Promise<User>;
-  loginUser: (userData: createUserDTO, type: loginType) => Promise<User>;
   editUser: (userId: string, newUserData: updateUserDTO) => Promise<User>;
   getUser: (userId: string) => Promise<User>;
   deleteUser: (userId: string) => Promise<void>;
 }
 
 export interface Userservice {
-  createUser: (
-    userData: createUserDTO,
-    type: createUserType
-  ) => Promise<PublicUser>;
-  loginUser: (userData: createUserDTO, type: loginType) => Promise<tokens>;
   editUser: (userId: string, newUserData: updateUserDTO) => Promise<PublicUser>;
   getUser: (userId: string) => Promise<PublicUser>;
   deleteUser: (userId: string) => Promise<void>;

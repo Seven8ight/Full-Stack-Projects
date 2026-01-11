@@ -14,13 +14,11 @@ export const generateTokens = (payload: Object) => {
       refreshToken,
     };
   },
-  refreshAccessToken = (
-    refreshToken: string
-  ): boolean | { accessToken: string } => {
+  refreshAccessToken = (refreshToken: string): { accessToken: string } => {
     const userData = verifyRefreshToken(refreshToken);
 
     if (!userData) {
-      return false;
+      throw new Error("Invalid refresh token");
     }
 
     const newAccessToken = JWT.sign(userData, JWT_ACCESS_TOKEN!, {

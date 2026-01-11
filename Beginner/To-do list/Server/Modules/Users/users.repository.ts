@@ -14,73 +14,6 @@ import { comparePasswordAndHash, hashPassword } from "../../Utils/Password.js";
 export class UserRepository implements UserRepo {
   constructor(private pgClient: Client) {}
 
-  async createUser(userData: createUserDTO, userType: createUserType) {
-    try {
-      let newUser: QueryResult<User>;
-
-      if (userType.type == "legacy") {
-        const hashedPassword = hashPassword(userData.password as string);
-
-        newUser = await this.pgClient.query(
-          `INSERT INTO users(username,email,password,profile_image,oauth) VALUES($1,$2,$3,$4,$5) RETURNING *`,
-          [
-            userData.username,
-            userData.email,
-            hashedPassword,
-            userData.profileImage,
-            false,
-          ]
-        );
-      } else {
-        newUser = await this.pgClient.query(
-          `INSERT INTO user(username,email,profile_image,oauth,oauth_provider) RETURNING *`,
-          [
-            userData.username,
-            userData.email,
-            userData.profileImage,
-            true,
-            userData.oAuthProvider,
-          ]
-        );
-      }
-
-      if (newUser.rowCount && newUser.rowCount > 0) return newUser.rows[0]!;
-
-      throw new Error("New user not created, try again");
-    } catch (error) {
-      errorMsg(`${(error as Error).message}`);
-      warningMsg(`Error at creating user repo`);
-      throw error;
-    }
-  }
-
-  async loginUser(userData: createUserDTO, type: loginType) {
-    try {
-      const findUser: QueryResult<User> = await this.pgClient.query(
-        "SELECT * FROM users WHERE email=$1 or username=$2",
-        [userData.email, userData.username]
-      );
-
-      if (findUser.rowCount && findUser.rowCount > 0) {
-        if (type == "legacy") {
-          if (
-            !comparePasswordAndHash(
-              findUser.rows[0]?.password as string,
-              userData.password as string
-            )
-          )
-            throw new Error("Invalid password");
-        }
-        return findUser.rows[0] as User;
-      }
-      throw new Error("No user exists of such username or email");
-    } catch (error) {
-      warningMsg("Error at login repo");
-      errorMsg(`${(error as Error).message}`);
-      throw error;
-    }
-  }
-
   async editUser(userId: string, newUserData: updateUserDTO) {
     try {
       let keys: string[] = [],
@@ -88,6 +21,8 @@ export class UserRepository implements UserRepo {
         paramIndex = 2;
 
       for (let [key, value] of Object.entries(newUserData)) {
+        if (key == "password") value = hashPassword(value);
+
         keys.push(`${key}=$${paramIndex++}`);
         values.push(value);
       }

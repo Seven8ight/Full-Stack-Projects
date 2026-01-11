@@ -5,7 +5,6 @@ import type {
   createUserType,
   loginType,
   PublicUser,
-  tokens,
   updateUserDTO,
   User,
   UserRepo,
@@ -22,56 +21,6 @@ export class UserService implements Userservice {
       email: userData.email,
       profileImage: (userData as any).profile_image,
     };
-  }
-
-  async loginUser(userData: createUserDTO, type: loginType) {
-    try {
-      const loginProcess = await this.UserRepo.loginUser(userData, type),
-        publicUser = this.createPublicUser(loginProcess),
-        userTokens = generateTokens(publicUser);
-
-      return userTokens;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async createUser(userData: createUserDTO, userType: createUserType) {
-    const allowedFields: string[] = [
-      "username",
-      "email",
-      "password",
-      "profileimage",
-      "oauth",
-      "oauthprovider",
-    ];
-
-    let newUserObject: Record<string, any> = {};
-
-    for (let [key, value] of Object.entries(userData)) {
-      if (!allowedFields.includes(key.toLowerCase())) continue;
-      if (typeof value == "string" && value.length < 0)
-        throw new Error(`${key} has an empty value`);
-      if (typeof value == "boolean" && (value == null || value == undefined))
-        throw new Error(`Oauth is empty, provide a boolean value for checking`);
-
-      newUserObject[key] = value;
-    }
-
-    if (userType.type == "oAuth")
-      newUserObject["oauthProvider"] = userType.provider;
-
-    try {
-      const newUser: User = await this.UserRepo.createUser(
-        newUserObject as any,
-        userType
-      );
-
-      return this.createPublicUser(newUser);
-    } catch (error) {
-      warningMsg("Create user service error occurred");
-      throw error;
-    }
   }
 
   async editUser(userId: string, newUserData: updateUserDTO) {
