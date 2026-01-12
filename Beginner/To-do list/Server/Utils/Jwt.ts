@@ -21,6 +21,8 @@ export const generateTokens = (payload: Object) => {
       throw new Error("Invalid refresh token");
     }
 
+    delete userData.exp;
+
     const newAccessToken = JWT.sign(userData, JWT_ACCESS_TOKEN!, {
       expiresIn: "3600s",
     });

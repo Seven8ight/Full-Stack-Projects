@@ -32,7 +32,7 @@ export class TodoRepository implements ToDoInterface {
       let keys: string[] = [],
         values: string[] = [],
         paramIndex = 2;
-      console.log(newTodo);
+
       for (let [key, value] of Object.entries(newTodo)) {
         keys.push(`${key}=$${paramIndex++}`);
         values.push(value);

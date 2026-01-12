@@ -58,6 +58,8 @@ export const UserController = (
 
   request.on("end", async () => {
     try {
+      if (unparsedRequestBody.length == 0) unparsedRequestBody = "{}";
+
       const parsedRequestBody: any = JSON.parse(unparsedRequestBody);
 
       switch (pathNames[2]) {

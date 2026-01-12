@@ -72,6 +72,7 @@ export class AuthRepository implements AuthRepo {
           )
             throw new Error("Invalid password");
         }
+
         return findUser.rows[0] as User;
       }
 

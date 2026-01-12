@@ -94,6 +94,8 @@ export class AuthService implements AuthServ {
     refreshToken: string
   ): Promise<Omit<tokens, "refreshToken">> {
     try {
+      const currentDate = new Date();
+
       const verifyToken = verifyRefreshToken(refreshToken),
         checkTokenInDatabase = await this.authRepo.findRefreshToken(
           refreshToken
@@ -101,13 +103,24 @@ export class AuthService implements AuthServ {
 
       if (!verifyToken) throw new Error("Token is invalid");
 
-      if (checkTokenInDatabase)
-        await this.authRepo.revokeRefreshToken(refreshToken);
+      if (checkTokenInDatabase) {
+        const expiryDateForToken = new Date(checkTokenInDatabase.expires_at);
+
+        if (currentDate.getDate() == expiryDateForToken.getDate())
+          await this.authRepo.revokeRefreshToken(checkTokenInDatabase.token);
+      }
 
       const newAccessToken = refreshAccessToken(refreshToken);
 
       return { accessToken: newAccessToken.accessToken };
     } catch (error) {
+      const checkTokenInDatabase = await this.authRepo.findRefreshToken(
+        refreshToken
+      );
+
+      if (checkTokenInDatabase)
+        await this.authRepo.revokeRefreshToken(refreshToken);
+
       throw error;
     }
   }

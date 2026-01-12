@@ -50,7 +50,8 @@ export const AuthController = (
             if (pathNames[4] == "signup") {
               const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_SIGNUP_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile`;
 
-              response.writeHead(301, { location: authUrl }).end();
+              response.writeHead(301, { location: authUrl });
+              return response.end();
             } else if (pathNames[4] == "callback") {
               const googleCode = requestUrl.searchParams.get("code");
 
@@ -110,7 +111,15 @@ export const AuthController = (
               googleTokenRequest.write(postData);
               googleTokenRequest.end();
             }
+          } else {
+            response.writeHead(400);
+            response.end(
+              JSON.stringify({
+                error: "Ensure to pass in the correct path segment ",
+              })
+            );
           }
+
           break;
         case "login":
           if (pathNames[3] == "legacy") {
@@ -120,14 +129,13 @@ export const AuthController = (
             );
 
             response.writeHead(201);
-            response.end(loginLegacyUser);
+            return response.end(JSON.stringify(loginLegacyUser));
           } else if (pathNames[3] == "google") {
             if (pathNames[4] == "login") {
-              response
-                .writeHead(301, {
-                  location: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_LOGIN_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent`,
-                })
-                .end();
+              response.writeHead(301, {
+                location: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_LOGIN_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent`,
+              });
+              return response.end();
             } else if (pathNames[4] == "callback") {
               const googleCode = requestUrl.searchParams.get("code");
 
@@ -184,9 +192,27 @@ export const AuthController = (
               googleTokenRequest.write(postData);
               googleTokenRequest.end();
             }
+          } else {
+            response.writeHead(400);
+            response.end(
+              JSON.stringify({
+                error: "Ensure to pass in the correct path segment ",
+              })
+            );
           }
+
           break;
         case "refresh":
+          if (request.method != "POST") {
+            response.writeHead(405);
+            response.end(
+              JSON.stringify({
+                error: "Use Post instead",
+              })
+            );
+            return;
+          }
+
           const refreshUserToken = await authService.refreshToken(
             parsedRequestBody.refreshToken
           );
@@ -197,6 +223,7 @@ export const AuthController = (
               accessToken: refreshUserToken.accessToken,
             })
           );
+
           break;
         default:
           response.writeHead(400);
@@ -205,16 +232,15 @@ export const AuthController = (
               message: "Auth route use specified routes",
             })
           );
+
           break;
       }
     } catch (error) {
       console.log(error);
+      if (response.headersSent) return;
+
       response.writeHead(400);
-      response.end(
-        JSON.stringify({
-          error: (error as Error).message,
-        })
-      );
+      return response.end(JSON.stringify({ error: (error as Error).message }));
     }
   });
 };
