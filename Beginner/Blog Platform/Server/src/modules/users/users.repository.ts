@@ -1,5 +1,5 @@
 import type { Client, QueryResult } from "pg";
-import { error as ErrorLog } from "../../utils/logger.js";
+import { error as ErrorLog } from "../../utils/Logger.js";
 import bcrypt from "bcryptjs";
 import {
   type UserRepo,
