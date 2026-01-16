@@ -1,0 +1,134 @@
+.text {
+  & h1 {
+    font-size: 23px;
+  }
+
+  & p {
+    font-size: 19px;
+  }
+}
+
+.todosContainer {
+  width: 83vw;
+  margin: auto;
+}
+
+.text {
+  margin-top: 75px;
+
+  & h3 {
+    font-size: 25px;
+    color: #7b6069;
+    margin-bottom: 7px;
+  }
+  & h2 {
+    & span {
+      color: #d72d66;
+    }
+    font-size: 27px;
+  }
+}
+
+.summary {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 50px;
+  margin-bottom: 60px;
+
+  & div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 20px;
+    width: 250px;
+    height: 250px;
+    /* Layer 1: Sharp anchor | Layer 2: Mid-soft depth | Layer 3: Wide ambient glow */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05),
+      0 12px 24px rgba(0, 0, 0, 0.05);
+    padding: 15px;
+
+    &:first-of-type {
+      color: #d72d66;
+    }
+
+    &:nth-of-type(2) {
+      color: orange;
+    }
+
+    &:last-of-type {
+      color: #2dd7a1;
+    }
+
+    & i {
+      font-size: 50px;
+    }
+
+    & Label {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  }
+}
+
+.input {
+  display: flex;
+  flex-direction: row;
+
+  & input {
+    width: 70vw;
+    justify-self: flex-start;
+    align-self: flex-start;
+    margin-right: 30px;
+  }
+}
+
+.add {
+  & h3 {
+    font-size: 25px;
+    margin-bottom: 15px;
+  }
+  margin-bottom: 30px;
+}
+
+.todaystasks {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.todaytask {
+  flex-shrink: 0;
+  margin-right: 50px;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05),
+    0 12px 24px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  width: 275px;
+  height: 275px;
+
+  & h4 {
+    font-size: 27px;
+    margin-bottom: 10px;
+  }
+
+  & p {
+    &:first-of-type {
+      color: grey;
+      margin-top: 30px;
+      margin-bottom: 50px;
+    }
+
+    &:nth-of-type(2) {
+      margin-bottom: 15px;
+    }
+
+    // &:last-of-type {
+    //   margin-bottom: 20px;
+    // }
+  }
+}
