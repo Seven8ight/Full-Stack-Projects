@@ -3,13 +3,13 @@ import Routes from "./routes.js";
 
 export default function Router(
   request: IncomingMessage,
-  response: ServerResponse<IncomingMessage>
+  response: ServerResponse<IncomingMessage>,
 ) {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     pathName = requestUrl.pathname.split("/").filter(Boolean);
 
   const matchedRoute = Routes().find(
-    (route) => pathName[1]?.toLowerCase() === route.pathname
+    (route) => pathName[1]?.toLowerCase() === route.pathname,
   );
 
   if (matchedRoute) {
