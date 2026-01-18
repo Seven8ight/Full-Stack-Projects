@@ -22,9 +22,28 @@
   background: var(--background);
   border-radius: 12px;
   /* Layer 1: Sharp anchor | Layer 2: Mid-soft depth | Layer 3: Wide ambient glow */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.05),
     0 12px 24px rgba(0, 0, 0, 0.05);
   padding: 30px;
+}
+
+.password {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  // border: 1px solid black;
+
+  & input {
+    width: 27vw;
+  }
+
+  & button {
+    position: relative;
+    bottom: 0.6vh;
+  }
 }
 
 .form {
@@ -94,4 +113,19 @@
   & a {
     color: grey;
   }
+}
+
+.errorAlert {
+  position: relative;
+  left: 29.75vw;
+  top: 14vh;
+  padding: 15px;
+  width: 40vw;
+  height: 15vh;
+  overflow: scroll;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 12px 24px rgba(0, 0, 0, 0.05);
 }

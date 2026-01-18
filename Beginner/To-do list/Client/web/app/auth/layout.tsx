@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import styles from "./layout.module.scss";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 
 const RootLayout = ({
   children,
@@ -21,6 +22,7 @@ const RootLayout = ({
         </Button>
       </div>
       {children}
+      <Toaster />
     </div>
   );
 };

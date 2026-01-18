@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 import Navbar from "./_components/Navbar";
 
 const geistSans = Geist({
@@ -31,6 +32,7 @@ export default function RootLayout({
       >
         <Navbar />
         {children}
+        <Toaster />
         <Script
           src="https://kit.fontawesome.com/9e14e23008.js"
           crossOrigin="anonymous"
