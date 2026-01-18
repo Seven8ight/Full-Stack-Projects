@@ -29,7 +29,7 @@ export class AuthRepository implements AuthRepo {
             hashedPassword,
             userData.profileImage,
             false,
-          ]
+          ],
         );
       } else {
         newUser = await this.pgClient.query(
@@ -40,7 +40,7 @@ export class AuthRepository implements AuthRepo {
             userData.profileImage,
             true,
             userData.oAuthProvider,
-          ]
+          ],
         );
       }
 
@@ -48,7 +48,6 @@ export class AuthRepository implements AuthRepo {
 
       throw new Error("New user not created, try again");
     } catch (error) {
-      console.log(error);
       errorMsg(`${(error as Error).message}`);
       warningMsg(`Error at creating auth repo`);
       throw error;
@@ -59,7 +58,7 @@ export class AuthRepository implements AuthRepo {
     try {
       const findUser: QueryResult<User> = await this.pgClient.query(
         "SELECT * FROM users WHERE email=$1 or username=$2",
-        [userData.email, userData.username]
+        [userData.email, userData.username],
       );
 
       if (findUser.rowCount && findUser.rowCount > 0) {
@@ -67,7 +66,7 @@ export class AuthRepository implements AuthRepo {
           if (
             !comparePasswordAndHash(
               userData.password as string,
-              findUser.rows[0]?.password as string
+              findUser.rows[0]?.password as string,
             )
           )
             throw new Error("Invalid password");
@@ -84,14 +83,14 @@ export class AuthRepository implements AuthRepo {
     }
   }
 
-  async storeRefreshToken(refreshToken: string) {
+  async storeRefreshToken(userId: string, refreshToken: string) {
     try {
       const currentDate = new Date();
       currentDate.setDate(currentDate.getDate() + 7);
 
       const store = await pgClient.query(
-        "INSERT INTO refresh_tokens(token, expires_at) VALUES($1,$2) RETURNING *",
-        [refreshToken, currentDate.toUTCString()]
+        "INSERT INTO refresh_tokens(token, user_id, expires_at) VALUES($1,$2,$3) RETURNING *",
+        [refreshToken, userId, currentDate.toUTCString()],
       );
 
       if (store.rowCount && store.rowCount <= 0)
@@ -105,7 +104,7 @@ export class AuthRepository implements AuthRepo {
     try {
       const findToken = await pgClient.query(
         "SELECT * FROM refresh_tokens WHERE token=$1",
-        [token]
+        [token],
       );
 
       if (findToken.rowCount && findToken.rowCount > 0)

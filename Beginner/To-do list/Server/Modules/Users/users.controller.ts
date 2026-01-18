@@ -7,7 +7,7 @@ import { generateTokens, verifyAccessToken } from "../../Utils/Jwt.js";
 
 export const UserController = (
   request: IncomingMessage,
-  response: ServerResponse<IncomingMessage>
+  response: ServerResponse<IncomingMessage>,
 ) => {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     pathNames = requestUrl.pathname.split("/").filter(Boolean),
@@ -16,44 +16,28 @@ export const UserController = (
   let unparsedRequestBody: string = "",
     userId: string = "";
 
-  if (
-    !pathNames.includes("create") &&
-    !pathNames.includes("login") &&
-    !authorization
-  ) {
-    response.writeHead(401);
+  const userVerifier = verifyAccessToken(
+    authorization?.split(" ")[1] as string,
+  );
+
+  if (!userVerifier) {
+    response.writeHead(403);
     response.end(
       JSON.stringify({
-        error: "Authentication header missing",
-      })
+        error: "Authentication failed, re-log in",
+      }),
     );
     return;
   }
 
-  if (!pathNames.includes("create") && !pathNames.includes("login")) {
-    const userVerifier = verifyAccessToken(
-      authorization?.split(" ")[1] as string
-    );
-
-    if (!userVerifier) {
-      response.writeHead(403);
-      response.end(
-        JSON.stringify({
-          error: "Authentication failed, re-log in",
-        })
-      );
-      return;
-    }
-
-    userId = userVerifier.id;
-  }
+  userId = userVerifier.id;
 
   const UserRepo: UserRepo = new UserRepository(pgClient),
     Userservice: Userservice = new UserService(UserRepo);
 
   request.on(
     "data",
-    (buffer: Buffer) => (unparsedRequestBody += buffer.toString())
+    (buffer: Buffer) => (unparsedRequestBody += buffer.toString()),
   );
 
   request.on("end", async () => {
@@ -69,7 +53,7 @@ export const UserController = (
             response.end(
               JSON.stringify({
                 error: "Use Patch instead",
-              })
+              }),
             );
             return;
           }
@@ -80,7 +64,7 @@ export const UserController = (
           response.end(
             JSON.stringify({
               message: "Edit successful",
-            })
+            }),
           );
 
           break;
@@ -90,7 +74,7 @@ export const UserController = (
             response.end(
               JSON.stringify({
                 error: "Use GET instead",
-              })
+              }),
             );
             return;
           }
@@ -107,7 +91,7 @@ export const UserController = (
             response.end(
               JSON.stringify({
                 error: "Use DELETE instead",
-              })
+              }),
             );
             return;
           }
@@ -122,7 +106,7 @@ export const UserController = (
       response.end(
         JSON.stringify({
           error: (error as Error).message,
-        })
+        }),
       );
     }
   });

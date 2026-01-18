@@ -1,15 +1,7 @@
 import type { Client, QueryResult } from "pg";
-import type {
-  createUserDTO,
-  createUserType,
-  loginType,
-  tokens,
-  updateUserDTO,
-  User,
-  UserRepo,
-} from "./users.types.js";
-import { errorMsg, warningMsg } from "../../Utils/Logger.js";
-import { comparePasswordAndHash, hashPassword } from "../../Utils/Password.js";
+import type { updateUserDTO, User, UserRepo } from "./users.types.js";
+import { warningMsg } from "../../Utils/Logger.js";
+import { hashPassword } from "../../Utils/Password.js";
 
 export class UserRepository implements UserRepo {
   constructor(private pgClient: Client) {}
@@ -29,7 +21,7 @@ export class UserRepository implements UserRepo {
 
       const userUpdate: QueryResult<User> = await this.pgClient.query(
         `UPDATE users SET ${keys.join(",")} WHERE id=$1 RETURNING *`,
-        [userId, ...values]
+        [userId, ...values],
       );
 
       if (userUpdate.rowCount && userUpdate.rowCount > 0)
@@ -46,7 +38,7 @@ export class UserRepository implements UserRepo {
     try {
       const userRetrieval: QueryResult<User> = await this.pgClient.query(
         "SELECT * FROM users WHERE id=$1",
-        [userId]
+        [userId],
       );
 
       if (userRetrieval.rowCount && userRetrieval.rowCount > 0)

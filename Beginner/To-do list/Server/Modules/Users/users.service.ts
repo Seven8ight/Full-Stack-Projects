@@ -40,7 +40,9 @@ export class UserService implements Userservice {
         if (!allowedFields.includes(key.toLowerCase())) continue;
         if (value.length < 0) throw new Error(`${key} has an empty value`);
 
-        newUserObject[key] = value;
+        if (key.toLowerCase() == "profileimage")
+          newUserObject["profile_image"] = value;
+        else newUserObject[key] = value;
       }
 
       const updatedUser = await this.UserRepo.editUser(userId, newUserObject);

@@ -21,7 +21,7 @@ export interface AuthRepo {
   register: (userData: createUserDTO, type: createUserType) => Promise<User>;
   login: (userData: createUserDTO, type: loginType) => Promise<User>;
   findRefreshToken: (token: string) => Promise<RefreshToken>;
-  storeRefreshToken: (refreshToken: string) => Promise<void>;
+  storeRefreshToken: (userId: string, refreshToken: string) => Promise<void>;
   revokeRefreshToken: (refreshToken: string) => Promise<void>;
 }
 

@@ -27,7 +27,7 @@ export class AuthService implements AuthServ {
 
   async register(
     userData: createUserDTO,
-    userType: createUserType
+    userType: createUserType,
   ): Promise<tokens> {
     try {
       const allowedFields: string[] = [
@@ -47,7 +47,7 @@ export class AuthService implements AuthServ {
           throw new Error(`${key} has an empty value`);
         if (typeof value == "boolean" && (value == null || value == undefined))
           throw new Error(
-            `Oauth is empty, provide a boolean value for checking`
+            `Oauth is empty, provide a boolean value for checking`,
           );
 
         newUserObject[key] = value;
@@ -59,12 +59,15 @@ export class AuthService implements AuthServ {
       try {
         const newUser: User = await this.authRepo.register(
             newUserObject as any,
-            userType
+            userType,
           ),
           formatNewUser = this.createPublicUser(newUser),
           newUserTokens = generateTokens(formatNewUser);
 
-        await this.authRepo.storeRefreshToken(newUserTokens.refreshToken);
+        await this.authRepo.storeRefreshToken(
+          formatNewUser.id,
+          newUserTokens.refreshToken,
+        );
 
         return newUserTokens;
       } catch (error) {
@@ -82,7 +85,10 @@ export class AuthService implements AuthServ {
         publicUser = this.createPublicUser(loginProcess),
         userTokens = generateTokens(publicUser);
 
-      await this.authRepo.storeRefreshToken(userTokens.refreshToken);
+      await this.authRepo.storeRefreshToken(
+        publicUser.id,
+        userTokens.refreshToken,
+      );
 
       return userTokens;
     } catch (error) {
@@ -91,15 +97,14 @@ export class AuthService implements AuthServ {
   }
 
   async refreshToken(
-    refreshToken: string
+    refreshToken: string,
   ): Promise<Omit<tokens, "refreshToken">> {
     try {
       const currentDate = new Date();
 
       const verifyToken = verifyRefreshToken(refreshToken),
-        checkTokenInDatabase = await this.authRepo.findRefreshToken(
-          refreshToken
-        );
+        checkTokenInDatabase =
+          await this.authRepo.findRefreshToken(refreshToken);
 
       if (!verifyToken) throw new Error("Token is invalid");
 
@@ -114,9 +119,8 @@ export class AuthService implements AuthServ {
 
       return { accessToken: newAccessToken.accessToken };
     } catch (error) {
-      const checkTokenInDatabase = await this.authRepo.findRefreshToken(
-        refreshToken
-      );
+      const checkTokenInDatabase =
+        await this.authRepo.findRefreshToken(refreshToken);
 
       if (checkTokenInDatabase)
         await this.authRepo.revokeRefreshToken(refreshToken);

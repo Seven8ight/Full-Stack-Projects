@@ -22,6 +22,7 @@ export const generateTokens = (payload: Object) => {
     }
 
     delete userData.exp;
+    delete userData.iat;
 
     const newAccessToken = JWT.sign(userData, JWT_ACCESS_TOKEN!, {
       expiresIn: "3600s",
@@ -32,6 +33,7 @@ export const generateTokens = (payload: Object) => {
   verifyAccessToken = (accessToken: string): boolean | any => {
     try {
       const userData = JWT.verify(accessToken, JWT_ACCESS_TOKEN!);
+
       return userData;
     } catch (error) {
       return false;
