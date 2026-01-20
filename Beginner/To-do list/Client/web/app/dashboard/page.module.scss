@@ -95,7 +95,7 @@
 
 .addTaskBtn {
   position: relative;
-  left: 10vw;
+  left: 9vw;
 }
 
 .add {
@@ -151,4 +151,10 @@
 .noTasks {
   margin: auto;
   text-align: center;
+  height: 10vh;
+
+  & p {
+    position: relative;
+    top: 7vh;
+  }
 }

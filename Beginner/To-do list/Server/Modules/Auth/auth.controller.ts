@@ -14,7 +14,7 @@ import type { createUserDTO } from "../Users/users.types.js";
 
 export const AuthController = (
   request: IncomingMessage,
-  response: ServerResponse<IncomingMessage>
+  response: ServerResponse<IncomingMessage>,
 ) => {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     pathNames = requestUrl.pathname.split("/").filter(Boolean);
@@ -26,7 +26,7 @@ export const AuthController = (
 
   request.on(
     "data",
-    (data: Buffer) => (unParsedRequestBody += data.toString())
+    (data: Buffer) => (unParsedRequestBody += data.toString()),
   );
 
   request.on("end", async () => {
@@ -41,7 +41,7 @@ export const AuthController = (
               parsedRequestBody,
               {
                 type: "legacy",
-              }
+              },
             );
 
             response.writeHead(201);
@@ -83,8 +83,8 @@ export const AuthController = (
                       const payload = JSON.parse(
                         Buffer.from(
                           tokens.id_token.split(".")[1],
-                          "base64"
-                        ).toString()
+                          "base64",
+                        ).toString(),
                       );
 
                       const googleUserPayload: createUserDTO = {
@@ -98,14 +98,14 @@ export const AuthController = (
                           {
                             type: "oAuth",
                             provider: "google",
-                          }
+                          },
                         );
 
                       response.writeHead(200);
                       response.end(JSON.stringify(encryptedGoogleUser));
                     }
                   });
-                }
+                },
               );
 
               googleTokenRequest.write(postData);
@@ -116,7 +116,7 @@ export const AuthController = (
             response.end(
               JSON.stringify({
                 error: "Ensure to pass in the correct path segment ",
-              })
+              }),
             );
           }
 
@@ -125,7 +125,7 @@ export const AuthController = (
           if (pathNames[3] == "legacy") {
             const loginLegacyUser = await authService.login(
               parsedRequestBody,
-              "legacy"
+              "legacy",
             );
 
             response.writeHead(201);
@@ -167,8 +167,8 @@ export const AuthController = (
                       const payload = JSON.parse(
                         Buffer.from(
                           tokens.id_token.split(".")[1],
-                          "base64"
-                        ).toString()
+                          "base64",
+                        ).toString(),
                       );
 
                       const googleUserPayload: createUserDTO = {
@@ -179,14 +179,14 @@ export const AuthController = (
                         },
                         encryptedGoogleUser = await authService.login(
                           googleUserPayload,
-                          "google"
+                          "google",
                         );
 
                       response.writeHead(200);
                       response.end(JSON.stringify(encryptedGoogleUser));
                     }
                   });
-                }
+                },
               );
 
               googleTokenRequest.write(postData);
@@ -197,7 +197,7 @@ export const AuthController = (
             response.end(
               JSON.stringify({
                 error: "Ensure to pass in the correct path segment ",
-              })
+              }),
             );
           }
 
@@ -208,20 +208,20 @@ export const AuthController = (
             response.end(
               JSON.stringify({
                 error: "Use Post instead",
-              })
+              }),
             );
             return;
           }
 
           const refreshUserToken = await authService.refreshToken(
-            parsedRequestBody.refreshToken
+            parsedRequestBody.refreshToken,
           );
 
           response.writeHead(200);
           response.end(
             JSON.stringify({
               accessToken: refreshUserToken.accessToken,
-            })
+            }),
           );
 
           break;
@@ -230,13 +230,12 @@ export const AuthController = (
           response.end(
             JSON.stringify({
               message: "Auth route use specified routes",
-            })
+            }),
           );
 
           break;
       }
     } catch (error) {
-      console.log(error);
       if (response.headersSent) return;
 
       response.writeHead(400);

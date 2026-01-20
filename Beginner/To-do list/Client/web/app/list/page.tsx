@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   ChangeEvent,
   Dispatch,
+  MouseEvent,
   SetStateAction,
   useEffect,
   useState,
@@ -41,6 +42,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import useProfile, { Todo } from "../_components/Profile";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /* ---------- Helpers ---------- */
 
@@ -91,6 +99,7 @@ const EditModal = ({
     title: "",
     category: "",
     content: "",
+    status: "",
   });
 
   const inputHandler = (
@@ -103,8 +112,11 @@ const EditModal = ({
     }));
   };
 
-  const submitHandler = async () => {
+  const submitHandler = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
     const accessToken = localStorage.getItem("accessToken");
+
     if (!accessToken) {
       toast.error("User not identified, log in or signup to continue");
       return;
@@ -116,14 +128,24 @@ const EditModal = ({
       if (value.trim().length > 0) filledDetails[key] = value;
     }
 
+    filledDetails["id"] = todoId;
+
     try {
       const editRequest = await fetch("/api/todos", {
-        method: "PATCH",
-        headers: {
-          Authorization: `${accessToken}`,
-        },
-        body: JSON.stringify(filledDetails),
-      });
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(filledDetails),
+        }),
+        editResponse = await editRequest.json();
+
+      if (!editRequest.ok) {
+        toast.error(`${editResponse.error}`);
+        return;
+      }
+
+      toast.success("Task edited successfully");
     } catch (error) {
       toast.error(`${(error as Error).message}`);
     }
@@ -159,10 +181,35 @@ const EditModal = ({
                   onChange={(event) => inputHandler(event, "content")}
                 />
               </Field>
+              <Field>
+                <FieldLabel>Status</FieldLabel>
+                <Select
+                  onValueChange={(value) =>
+                    setDetails((details) => ({
+                      ...details,
+                      status: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger className="w-45">
+                    <SelectValue placeholder="how far are you?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="complete">Complete</SelectItem>
+                    <SelectItem value="incomplete">Incomplete</SelectItem>
+                    <SelectItem value="in progress">In progress</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
             </FieldGroup>
           </FieldSet>
           <Field orientation="horizontal">
-            <Button onClick={() => submitHandler()} type="submit">
+            <Button
+              onClick={(event: MouseEvent<HTMLButtonElement>) =>
+                submitHandler(event)
+              }
+              type="submit"
+            >
               Submit
             </Button>
             <Button
@@ -191,15 +238,53 @@ const TodoList = (): React.ReactNode => {
   const week = getWeek(selectedDate),
     colors: string[] = ["#7b6069", "#D72D66", "#2DD7A1"];
 
+  const deleteTaskHandler = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      toast.error("User not identified, log in or signup to continue");
+      return;
+    }
+
+    try {
+      const deleteRequest: Response = await fetch(
+          `/api/todos?todoid=${editId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        ),
+        deleteResponse = await deleteRequest.json();
+
+      if (!deleteRequest.ok) {
+        toast.error(`${deleteResponse.error}`);
+        return;
+      }
+
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      toast.error(`${(error as Error).message}`);
+    }
+  };
+
   useEffect(() => {
     setDateTasks(() => {
-      return todos.map((todo) => {
-        const taskDate = new Date(todo.createdDate);
+      return todos.filter((todo) => {
+        if (!todo.created_at) return false;
 
-        if (selectedDate.getDate() == taskDate.getDate()) return todo;
-      }) as Todo[];
+        const taskDate = new Date(todo.created_at);
+        if (isNaN(taskDate.getTime())) return false;
+
+        return (
+          selectedDate.getFullYear() === taskDate.getFullYear() &&
+          selectedDate.getMonth() === taskDate.getMonth() &&
+          selectedDate.getDate() === taskDate.getDate()
+        );
+      });
     });
-  }, [selectedDate]);
+  }, [selectedDate, todos]);
 
   return (
     <div id="days">
@@ -226,73 +311,84 @@ const TodoList = (): React.ReactNode => {
           </div>
         )}
         {selectedDateTasks.length > 0 &&
-          selectedDateTasks.map((todo, index) => (
-            <div
-              key={todo.id}
-              style={{
-                backgroundColor: colors[index % colors.length],
-              }}
-              className={styles.todo}
-            >
-              <div id="todo-info">
-                <div id="todo-header" className={styles.todoHeader}>
-                  <h2>{todo.title}</h2>
-                  <span>, Category</span>
+          selectedDateTasks.map((todo, index) => {
+            const todoDate = new Date(todo.created_at),
+              formattedDate = `${todoDate.getDate()}/${todoDate.getMonth() + 1}/${todoDate.getFullYear()}`;
+            return (
+              <div
+                key={todo.id}
+                style={{
+                  backgroundColor: colors[index % colors.length],
+                }}
+                className={styles.todo}
+              >
+                <div id="todo-info">
+                  <div id="todo-header" className={styles.todoHeader}>
+                    <h2>{todo.title}</h2>
+                    <span>, {todo.category}</span>
+                  </div>
+                  <p>{todo.content}</p>
                 </div>
-                <p>{todo.category}</p>
-              </div>
-              <div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <FeatherIcon
-                      className={styles.options}
-                      icon={"more-horizontal"}
-                    />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuLabel>Options</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                <div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <FeatherIcon
+                        className={styles.options}
+                        icon={"more-horizontal"}
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuLabel>Options</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
 
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        setVisible(true);
-                        setId(`${todo.id}`);
-                      }}
-                    >
-                      Edit
-                    </DropdownMenuItem>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem
-                          onSelect={(event) => event.preventDefault()}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete task item</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete the task and remove it from our servers.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction>Continue</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setVisible(true);
+                          setId(`${todo.id}`);
+                        }}
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(event) => {
+                              event.preventDefault();
+                              setId(`${todo.id}`);
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete task item
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will
+                              permanently delete the task and remove it from our
+                              servers.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteTaskHandler()}
+                            >
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                <p>
-                  Created at{" "}
-                  {`${todo.createdDate.getDate()}/${todo.createdDate.getMonth() + 1}/${todo.createdDate.getFullYear()}`}
-                </p>
+                  <p>Created at {formattedDate}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
       {editModal && <EditModal modalVisibility={setVisible} todoId={editId} />}
     </div>

@@ -16,12 +16,11 @@ import type { AuthRepo, AuthServ, tokens } from "./auth.types.js";
 export class AuthService implements AuthServ {
   constructor(private authRepo: AuthRepo) {}
 
-  private createPublicUser(userData: User): PublicUser {
+  private createPublicUser(userData: User): Omit<PublicUser, "profileImage"> {
     return {
       id: userData.id,
       username: userData.username,
       email: userData.email,
-      profileImage: (userData as any).profile_image,
     };
   }
 

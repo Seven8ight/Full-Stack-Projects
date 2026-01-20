@@ -70,7 +70,7 @@ export const PATCH = async (request: NextRequest) => {
     const updateRequest = await fetch("http://localhost:4000/api/users/edit", {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token.split(" ")[1]}`,
           "Content-type": "application/json",
         },
         body: JSON.stringify(requestBody),
@@ -127,7 +127,7 @@ export const DELETE = async (request: NextRequest) => {
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.split(" ")[1]}`,
           },
         },
       ),

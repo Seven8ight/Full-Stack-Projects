@@ -16,7 +16,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const Dashboard = (): React.ReactNode => {
   const { username, todos } = useProfile(),
@@ -27,12 +28,13 @@ const Dashboard = (): React.ReactNode => {
 
   useEffect(() => {
     setTTasks(() => {
-      return todos.map((todo) => {
-        const currentDate = new Date(),
-          taskDate = new Date(todo.createdDate);
+      const today = new Date().getDate();
 
-        if (currentDate.getDate() == taskDate.getDate()) return todo;
-      }) as Todo[];
+      return todos.filter((todo) => {
+        const taskDate = new Date(todo.created_at);
+
+        return taskDate.getDate() === today;
+      });
     });
     setCompleted(
       todos.reduce(
@@ -53,6 +55,58 @@ const Dashboard = (): React.ReactNode => {
       ),
     );
   }, [todos]);
+
+  const [details, setDetails] = useState<Record<string, string>>({
+    title: "",
+    category: "",
+    content: "",
+  });
+
+  const inputHandler = (
+    event: ChangeEvent<any>,
+    key: "title" | "category" | "content",
+  ) => {
+    setDetails((details) => ({
+      ...details,
+      [key]: event.target.value,
+    }));
+  };
+
+  const addTaskHandler = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      toast.error("User not identified, log in or signup to continue");
+      return;
+    }
+
+    for (let [key, value] of Object.entries(details)) {
+      if (value.trim().length <= 0) {
+        toast.error(`${key} has an empty value`);
+        return;
+      }
+    }
+
+    try {
+      const addRequest: Response = await fetch("/api/todos", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(details),
+        }),
+        addResponse = await addRequest.json();
+
+      if (!addRequest.ok) {
+        toast.error(`${addResponse.error}`);
+        return;
+      }
+
+      toast.success("Todo created");
+    } catch (error) {
+      toast.error(`${(error as Error).message}`);
+    }
+  };
 
   return (
     <div id="container">
@@ -104,26 +158,38 @@ const Dashboard = (): React.ReactNode => {
                   <div className="grid gap-4">
                     <div className="grid gap-3">
                       <Label htmlFor="name-1">Title</Label>
-                      <Input id="name-1" name="name" placeholder="Task title" />
+                      <Input
+                        onChange={(event) => inputHandler(event, "title")}
+                        id="name-1"
+                        name="name"
+                        placeholder="Task title"
+                      />
                     </div>
                     <div className="grid gap-3">
                       <Label htmlFor="username-1">Category</Label>
                       <Input
                         id="username-1"
+                        onChange={(event) => inputHandler(event, "category")}
                         name="username"
                         placeholder="category"
                       />
                     </div>
                     <div className="grid gap-3">
                       <Label htmlFor="username-1">Content</Label>
-                      <Textarea placeholder="What are we doing currently?" />
+                      <Textarea
+                        onChange={(event) => inputHandler(event, "content")}
+                        placeholder="What are we doing currently?"
+                      />
                     </div>
                   </div>
                   <DialogFooter>
                     <DialogClose asChild>
                       <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit">Create task</Button>
+
+                    <Button onClick={() => addTaskHandler()} type="submit">
+                      Create task
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -142,23 +208,29 @@ const Dashboard = (): React.ReactNode => {
                 </p>
               </div>
             ))} */}
-            {todaysTasks.length == 0 && (
+            {todaysTasks.length <= 0 && (
               <div id="no-tasks" className={styles.noTasks}>
                 <p>No tasks added, its a free day then</p>
               </div>
             )}
-            {todaysTasks.map((todo, index) => (
-              <div id="task" key={index} className={styles.todaytask}>
-                <h4>{todo.title}</h4>
-                <p>{todo.content}</p>
-                <p>
-                  Created at <span>{todo.createdDate.getHours()}</span>
-                </p>
-                <p>
-                  Status: <span>{todo.status}</span>
-                </p>
-              </div>
-            ))}
+            {todaysTasks.length > 0 &&
+              todaysTasks.map((todo, index) => {
+                const todoDate = new Date(todo.created_at),
+                  formattedDate = `${todoDate.getDate()}/${todoDate.getMonth() + 1}/${todoDate.getFullYear()}`;
+
+                return (
+                  <div id="task" key={index} className={styles.todaytask}>
+                    <h4>{todo.title}</h4>
+                    <p>{todo.content}</p>
+                    <p>
+                      Created at <span>{formattedDate}</span>
+                    </p>
+                    <p>
+                      Status: <span>{todo.status}</span>
+                    </p>
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>

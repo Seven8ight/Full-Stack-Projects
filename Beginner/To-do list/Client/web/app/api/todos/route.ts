@@ -23,7 +23,7 @@ export const GET = async (request: NextRequest) => {
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.split(" ")[1]}`,
             },
           },
         ),
@@ -60,7 +60,7 @@ export const GET = async (request: NextRequest) => {
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.split(" ")[1]}`,
             },
           },
         ),
@@ -102,6 +102,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
+  console.log("Called");
   const token = request.headers.get("authorization");
 
   if (!token)
@@ -118,11 +119,11 @@ export const POST = async (request: NextRequest) => {
     const todoBody = await request.json();
 
     const createTodoRequest: Response = await fetch(
-        "http://localhost:4000/api/todo/create",
+        "http://localhost:4000/api/todos/create",
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.split(" ")[1]}`,
             "Content-type": "application/json",
           },
           body: JSON.stringify(todoBody),
@@ -172,11 +173,11 @@ export const PATCH = async (request: NextRequest) => {
     const todoBody = await request.json();
 
     const updateTodoRequest: Response = await fetch(
-        "http://localhost:4000/api/todo/edit",
+        "http://localhost:4000/api/todos/edit",
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.split(" ")[1]}`,
             "Content-type": "application/json",
           },
           body: JSON.stringify(todoBody),
@@ -212,11 +213,7 @@ export const PATCH = async (request: NextRequest) => {
 export const DELETE = async (request: NextRequest) => {
   const token = request.headers.get("authorization");
 
-  const requestUrl = new URL(
-      request.url,
-      `http://${request.headers.get("host")}`,
-    ),
-    searchParams = requestUrl.searchParams;
+  const { searchParams } = request.nextUrl;
 
   if (!token)
     return NextResponse.json(
@@ -230,13 +227,13 @@ export const DELETE = async (request: NextRequest) => {
 
   try {
     const todoId = searchParams.get("todoid");
-
+    console.log(todoId);
     const deleteTodoRequest: Response = await fetch(
-        `http://localhost:4000/api/todo/delete?type=one&todoid=${todoId}`,
+        `http://localhost:4000/api/todos/delete?type=one&todoid=${todoId}`,
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.split(" ")[1]}`,
             "Content-type": "application/json",
           },
         },

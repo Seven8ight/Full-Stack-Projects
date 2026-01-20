@@ -108,7 +108,7 @@ const Modal = forwardRef<
         const updateRequest: Response = await fetch("/api/profile", {
             method: "PATCH",
             headers: {
-              Authorization: accessToken,
+              Authorization: `Bearer ${accessToken}`,
               "Content-type": "application/json",
             },
             body: JSON.stringify(requestBody),

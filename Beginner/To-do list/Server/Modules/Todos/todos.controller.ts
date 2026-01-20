@@ -49,6 +49,7 @@ export const TodoController = (
 
   request.on("end", async () => {
     try {
+      if (unparsedRequestBody.length <= 0) unparsedRequestBody = "{}";
       let parsedRequestBody: any;
 
       if (unparsedRequestBody.length > 0)
