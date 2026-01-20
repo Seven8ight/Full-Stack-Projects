@@ -6,14 +6,15 @@ import Router from "./router.js";
 
 const server = http.createServer(
   (request: IncomingMessage, response: ServerResponse<IncomingMessage>) =>
-    Router(request, response)
+    Router(request, response),
 );
 
 server.listen(SERVER_PORT, async () => {
   try {
     await connectToDatabase();
+
     info(
-      `Server and database are live, server is up and running at port ${SERVER_PORT}`
+      `Server and database are live, server is up and running at port ${SERVER_PORT}`,
     );
   } catch (error) {
     warningMsg(`Server is live, database is down, server at ${SERVER_PORT}`);

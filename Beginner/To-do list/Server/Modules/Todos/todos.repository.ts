@@ -14,7 +14,7 @@ export class TodoRepository implements ToDoInterface {
     try {
       const todoItem: QueryResult<Todo> = await this.pgClient.query(
         `INSERT INTO todos(title,content,category,user_id) VALUES($1,$2,$3,$4) RETURNING *`,
-        [todoData.title, todoData.content, todoData.category, userId]
+        [todoData.title, todoData.content, todoData.category, userId],
       );
 
       if (todoItem.rowCount && todoItem.rowCount > 0)
@@ -27,6 +27,7 @@ export class TodoRepository implements ToDoInterface {
       throw error;
     }
   }
+
   async editTodo(newTodo: updateTodo) {
     try {
       let keys: string[] = [],
@@ -40,7 +41,7 @@ export class TodoRepository implements ToDoInterface {
 
       const todoUpdate: QueryResult<Todo> = await this.pgClient.query(
         `UPDATE todos SET ${keys.join(",")} WHERE id=$1 RETURNING *`,
-        [newTodo.id, ...values]
+        [newTodo.id, ...values],
       );
 
       if (todoUpdate.rowCount && todoUpdate.rowCount > 0)
@@ -57,7 +58,7 @@ export class TodoRepository implements ToDoInterface {
     try {
       const todoRetrieval: QueryResult<Todo> = await this.pgClient.query(
         "SELECT * FROM todos WHERE id=$1 and user_id=$2",
-        [todoId, userId]
+        [todoId, userId],
       );
 
       if (todoRetrieval.rowCount && todoRetrieval.rowCount > 0)
@@ -73,14 +74,13 @@ export class TodoRepository implements ToDoInterface {
     try {
       const todosRetrieval: QueryResult<Todo> = await this.pgClient.query(
         "SELECT * FROM todos WHERE user_id=$1",
-        [userId]
+        [userId],
       );
 
-      if (todosRetrieval.rowCount && todosRetrieval.rowCount > 0)
-        return todosRetrieval.rows;
-      throw new Error("todos does not exist");
+      return todosRetrieval.rows;
     } catch (error) {
       warningMsg("Get todos repo error occurred");
+      errorMsg(`${(error as Error).message}`);
       throw error;
     }
   }
@@ -89,7 +89,7 @@ export class TodoRepository implements ToDoInterface {
     try {
       await this.pgClient.query(
         `DELETE FROM todos WHERE id=$1 AND user_id=$2`,
-        [todoId, userId]
+        [todoId, userId],
       );
     } catch (error) {
       warningMsg("Delete user repo error occurred");

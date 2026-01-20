@@ -7,7 +7,7 @@ import type { Todo } from "./todos.types.js";
 
 export const TodoController = (
   request: IncomingMessage,
-  response: ServerResponse<IncomingMessage>
+  response: ServerResponse<IncomingMessage>,
 ) => {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     pathNames = requestUrl.pathname.split("/").filter(Boolean),
@@ -18,7 +18,7 @@ export const TodoController = (
     response.end(
       JSON.stringify({
         error: "Authorization tokens must be provided",
-      })
+      }),
     );
     return;
   }
@@ -30,7 +30,7 @@ export const TodoController = (
     response.end(
       JSON.stringify({
         error: "Authentication failed, re-log in",
-      })
+      }),
     );
     return;
   }
@@ -44,12 +44,15 @@ export const TodoController = (
 
   request.on(
     "data",
-    (buffer: Buffer) => (unparsedRequestBody += buffer.toString())
+    (buffer: Buffer) => (unparsedRequestBody += buffer.toString()),
   );
 
   request.on("end", async () => {
     try {
-      const parsedRequestBody: any = JSON.parse(unparsedRequestBody);
+      let parsedRequestBody: any;
+
+      if (unparsedRequestBody.length > 0)
+        parsedRequestBody = JSON.parse(unparsedRequestBody);
 
       switch (pathNames[2]) {
         case "create":
@@ -58,14 +61,14 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Use POST instead",
-              })
+              }),
             );
             return;
           }
 
           const createOperation: Todo = await todoService.createTodo(
             userId,
-            parsedRequestBody
+            parsedRequestBody,
           );
 
           response.writeHead(201);
@@ -77,7 +80,7 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Use PATCH instead",
-              })
+              }),
             );
             return;
           }
@@ -93,7 +96,7 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Use GET instead",
-              })
+              }),
             );
             return;
           }
@@ -105,7 +108,7 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Provide type in the search params",
-              })
+              }),
             );
             return;
           }
@@ -123,7 +126,7 @@ export const TodoController = (
               response.end(
                 JSON.stringify({
                   error: "todo id must be provided in the search param",
-                })
+                }),
               );
               return;
             }
@@ -140,7 +143,7 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Use DELETE instead",
-              })
+              }),
             );
             return;
           }
@@ -153,7 +156,7 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Provide type in search params",
-              })
+              }),
             );
             return;
           }
@@ -166,7 +169,7 @@ export const TodoController = (
               response.end(
                 JSON.stringify({
                   error: "Provide todoid in the search params",
-                })
+                }),
               );
               return;
             }
@@ -185,7 +188,7 @@ export const TodoController = (
             response.end(
               JSON.stringify({
                 error: "Invalid type value specify all or one",
-              })
+              }),
             );
           }
           break;
@@ -195,7 +198,7 @@ export const TodoController = (
       response.end(
         JSON.stringify({
           error: (error as Error).message,
-        })
+        }),
       );
     }
   });

@@ -1,5 +1,5 @@
 import type { QueryResult } from "pg";
-import { warningMsg } from "../../Utils/Logger.js";
+import { errorMsg, warningMsg } from "../../Utils/Logger.js";
 import type {
   createTodo,
   Todo,
@@ -27,7 +27,7 @@ export class TodoService implements ToDoInterface {
 
     const newTodo: Todo = await this.todoRepo.createTodo(
       userId,
-      newTodoData as createTodo
+      newTodoData as createTodo,
     );
 
     return newTodo;
@@ -56,7 +56,7 @@ export class TodoService implements ToDoInterface {
       newTodoObject["id"] = newTodo.id;
 
       const updatedTodo = await this.todoRepo.editTodo(
-        newTodoObject as updateTodo
+        newTodoObject as updateTodo,
       );
 
       return updatedTodo;
@@ -88,7 +88,8 @@ export class TodoService implements ToDoInterface {
 
       return retrieveTodos;
     } catch (error) {
-      warningMsg("Get user service error occurred");
+      errorMsg(`${(error as Error).message}`);
+      warningMsg("Get todo service error occurred");
       throw error;
     }
   }

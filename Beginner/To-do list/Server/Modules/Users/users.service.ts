@@ -1,5 +1,5 @@
 import { generateTokens } from "../../Utils/Jwt.js";
-import { warningMsg } from "../../Utils/Logger.js";
+import { errorMsg, warningMsg } from "../../Utils/Logger.js";
 import type {
   createUserDTO,
   createUserType,
@@ -62,6 +62,7 @@ export class UserService implements Userservice {
 
       return this.createPublicUser(retrieveUser);
     } catch (error) {
+      errorMsg(`${(error as Error).message}`);
       warningMsg("Get user service error occurred");
       throw error;
     }
