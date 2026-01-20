@@ -231,7 +231,11 @@ Modal.displayName = "Modal";
 const Profile = (): React.ReactNode => {
   const [modal, setModal] = useState<boolean>(false),
     modalRef = useRef<HTMLDivElement>(null),
-    { username, email, profileImage } = useProfile();
+    { username, email, profileImage, todos } = useProfile();
+
+  const [completed, setCompleted] = useState<number>(0),
+    [inProgress, setInProgress] = useState<number>(0),
+    [current, setCurrent] = useState<number>(0);
 
   useEffect(() => {
     if (!modal) return;
@@ -256,6 +260,27 @@ const Profile = (): React.ReactNode => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [modal]);
+
+  useEffect(() => {
+    setCompleted(
+      todos.reduce(
+        (count, todo) => (todo.status == "complete" ? count + 1 : count),
+        0,
+      ),
+    );
+    setInProgress(
+      todos.reduce(
+        (count, todo) => (todo.status == "in progress" ? count + 1 : count),
+        0,
+      ),
+    );
+    setCurrent(
+      todos.reduce(
+        (count, todo) => (todo.status == "incomplete" ? count + 1 : count),
+        0,
+      ),
+    );
+  }, [todos]);
 
   return (
     <div id="container">
@@ -299,15 +324,15 @@ const Profile = (): React.ReactNode => {
             </p>
             <div id="todos" className={styles.todos}>
               <div id="summary">
-                <h3>65</h3>
+                <h3>{completed}</h3>
                 <p>Completed</p>
               </div>
               <div id="summary">
-                <h3>35</h3>
+                <h3>{inProgress}</h3>
                 <p>In progress</p>
               </div>
               <div id="summary">
-                <h3>12</h3>
+                <h3>{current}</h3>
                 <p>Current</p>
               </div>
             </div>

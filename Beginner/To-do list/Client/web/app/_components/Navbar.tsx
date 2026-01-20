@@ -30,6 +30,13 @@ const Navbar = (): React.ReactNode => {
   const { theme, setTheme } = useTheme();
   const { accessToken } = useAuth();
 
+  const logOutHandler = () => {
+    localStorage.clear();
+    setTimeout(() => {
+      router.push("/auth/signup");
+    }, 1000);
+  };
+
   return (
     <div id="nav" className={styles.nav}>
       <Button
@@ -81,7 +88,9 @@ const Navbar = (): React.ReactNode => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction>Log out</AlertDialogAction>
+                  <AlertDialogAction onClick={() => logOutHandler()}>
+                    Log out
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

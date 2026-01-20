@@ -46,7 +46,9 @@
     width: 250px;
     height: 250px;
     /* Layer 1: Sharp anchor | Layer 2: Mid-soft depth | Layer 3: Wide ambient glow */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05),
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.05),
+      0 4px 12px rgba(0, 0, 0, 0.05),
       0 12px 24px rgba(0, 0, 0, 0.05);
     padding: 15px;
 
@@ -70,19 +72,30 @@
       font-size: 18px;
       margin-top: 20px;
     }
+
+    & p {
+      position: relative;
+      top: 1vh;
+    }
   }
 }
 
 .input {
   display: flex;
   flex-direction: row;
+  // border: 1px solid black;
 
-  & input {
+  & p {
     width: 70vw;
     justify-self: flex-start;
     align-self: flex-start;
     margin-right: 30px;
   }
+}
+
+.addTaskBtn {
+  position: relative;
+  left: 10vw;
 }
 
 .add {
@@ -105,7 +118,9 @@
   margin-right: 50px;
   border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.05),
     0 12px 24px rgba(0, 0, 0, 0.05);
   background: #fff;
   width: 275px;
@@ -131,4 +146,9 @@
     //   margin-bottom: 20px;
     // }
   }
+}
+
+.noTasks {
+  margin: auto;
+  text-align: center;
 }
