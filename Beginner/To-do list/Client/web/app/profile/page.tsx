@@ -126,6 +126,7 @@ const Modal = forwardRef<
       }
     },
     deleteHandler = async () => {
+      console.log("Called");
       try {
         const deleteRequest: Response = await fetch("/api/profile", {
             method: "DELETE",
@@ -156,11 +157,25 @@ const Modal = forwardRef<
       <div id="background" className={styles.modalBackground} />
 
       <div id="image" className={styles.modalInfo}>
-        <img
-          className={styles.modalImage}
-          src={profileImage}
-          alt="profile image"
-        />
+        {profileImage && profileImage.includes("https") ? (
+          <Image
+            loading="eager"
+            id="profile-page"
+            className={styles.profileImg}
+            src={profileImage}
+            width={96}
+            height={96}
+            alt="profile page"
+          />
+        ) : (
+          <img
+            loading="eager"
+            id="profile-page"
+            className={styles.profileImg}
+            src={BackgroundImage}
+            alt="profile page"
+          />
+        )}
         <div id="current-info">
           <h3>{username}</h3>
           <h4>{email}</h4>
@@ -215,7 +230,14 @@ const Modal = forwardRef<
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction disabled onClick={deleteHandler}>
+              <AlertDialogAction
+                type="button"
+                onClick={(event) => {
+                  console.log("Clicked");
+                  event.preventDefault();
+                  deleteHandler();
+                }}
+              >
                 Continue
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -254,10 +276,10 @@ const Profile = (): React.ReactNode => {
       setModal(false);
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, [modal]);
 
@@ -294,16 +316,18 @@ const Profile = (): React.ReactNode => {
       </div>
       <div id="profile-card" className={styles.card}>
         <div id="image">
-          {profileImage ? (
-            <img
+          {profileImage && profileImage.includes("https") ? (
+            <Image
               loading="eager"
               id="profile-page"
               className={styles.profileImg}
               src={profileImage}
+              width={96}
+              height={96}
               alt="profile page"
             />
           ) : (
-            <Image
+            <img
               loading="eager"
               id="profile-page"
               className={styles.profileImg}

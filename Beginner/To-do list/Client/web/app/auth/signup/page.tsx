@@ -38,75 +38,78 @@ const Signup = (): React.ReactNode => {
   };
 
   const registerHandler = async () => {
-    if (checkBox == false)
-      setErrorMsgs((errors) => [
-        ...errors,
-        `Terms and conditions must be accepted to proceed`,
-      ]);
+      if (checkBox == false)
+        setErrorMsgs((errors) => [
+          ...errors,
+          `Terms and conditions must be accepted to proceed`,
+        ]);
 
-    const formElements = {
-      username,
-      email,
-      password,
-    };
+      const formElements = {
+        username,
+        email,
+        password,
+      };
 
-    for (let [key, value] of Object.entries(formElements)) {
-      if (value.length < 0) {
-        setErrorMsgs((errors) => [...errors, `${key} has a no value`]);
+      for (let [key, value] of Object.entries(formElements)) {
+        if (value.length < 0) {
+          setErrorMsgs((errors) => [...errors, `${key} has a no value`]);
+        }
+
+        if (key == "password" || key == "username") {
+          if (value.length < 3 || value.length > 16)
+            setErrorMsgs((errors) => [
+              ...errors,
+              `${key} should range between 3 to 16`,
+            ]);
+        }
+
+        if (key == "email") {
+          if (
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email) ===
+            false
+          )
+            setErrorMsgs((errors) => [...errors, "Invalid email try again"]);
+        }
       }
 
-      if (key == "password" || key == "username") {
-        if (value.length < 3 || value.length > 16)
-          setErrorMsgs((errors) => [
-            ...errors,
-            `${key} should range between 3 to 16`,
-          ]);
-      }
+      if (errorMsg.length == 0) {
+        try {
+          const signupRequest: Response = await fetch("/api/auth/signup", {
+              method: "POST",
+              headers: {
+                "Content-type": "application/json",
+              },
+              body: JSON.stringify(formElements),
+            }),
+            signupResponse = await signupRequest.json();
 
-      if (key == "email") {
-        if (
-          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email) ===
-          false
-        )
-          setErrorMsgs((errors) => [...errors, "Invalid email try again"]);
-      }
-    }
+          if (!signupRequest.ok) {
+            setErrorSignup(true);
+            setErrorSignupMsg(signupResponse.message);
 
-    if (errorMsg.length == 0) {
-      try {
-        const signupRequest: Response = await fetch("/api/auth/signup", {
-            method: "POST",
-            headers: {
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify(formElements),
-          }),
-          signupResponse = await signupRequest.json();
+            toast.error(`${signupResponse.message}`);
+            return;
+          }
 
-        if (!signupRequest.ok) {
+          if (signupRequest.status == 201) {
+            localStorage.setItem("accessToken", signupResponse.accessToken);
+            localStorage.setItem("refreshToken", signupResponse.refreshToken);
+
+            toast.success("Account creation successful");
+
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 2000);
+          }
+        } catch (error) {
           setErrorSignup(true);
-          setErrorSignupMsg(signupResponse.message);
-
-          toast.error(`${signupResponse.message}`);
-          return;
+          setErrorSignupMsg(`${(error as Error).message}`);
         }
-
-        if (signupRequest.status == 201) {
-          localStorage.setItem("accessToken", signupResponse.accessToken);
-          localStorage.setItem("refreshToken", signupResponse.refreshToken);
-
-          toast.success("Account creation successful");
-
-          setTimeout(() => {
-            router.push("/dashboard");
-          }, 2000);
-        }
-      } catch (error) {
-        setErrorSignup(true);
-        setErrorSignupMsg(`${(error as Error).message}`);
       }
-    }
-  };
+    },
+    googleOauthHandler = () =>
+      (window.location.href =
+        "http://localhost:4000/api/auth/register/google/signup");
 
   useEffect(() => {
     if (errorMsg.length > 0) {
@@ -173,7 +176,11 @@ const Signup = (): React.ReactNode => {
           <div id="liner" className={styles.liner} />
         </div>
         <div id="oauth" className={styles.oauth}>
-          <Button variant="default" size="icon">
+          <Button
+            onClick={() => googleOauthHandler()}
+            variant="default"
+            size="icon"
+          >
             <i className="fa-brands fa-google"></i>
           </Button>
           <Button variant="secondary" disabled size="icon">

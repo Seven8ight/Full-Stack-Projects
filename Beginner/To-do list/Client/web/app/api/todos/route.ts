@@ -250,9 +250,14 @@ export const DELETE = async (request: NextRequest) => {
         },
       );
 
-    return NextResponse.json(deleteTodoResponse, {
-      status: deleteTodoRequest.status,
-    });
+    return NextResponse.json(
+      {
+        message: "Deleted successfully",
+      },
+      {
+        status: deleteTodoRequest.status,
+      },
+    );
   } catch (error) {
     return NextResponse.json(
       {

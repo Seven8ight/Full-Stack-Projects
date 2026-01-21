@@ -33,7 +33,6 @@ const Login = (): React.ReactNode => {
     loginSubmissionHandler = async () => {
       try {
         for (let [key, value] of Object.entries(details)) {
-          console.log(key);
           if (value.length <= 0) {
             toast.error(`${key} has no value`);
             return;
@@ -83,7 +82,10 @@ const Login = (): React.ReactNode => {
       } catch (error) {
         toast.error(`${(error as Error).message}`);
       }
-    };
+    },
+    googleOauth = () =>
+      (window.location.href =
+        "http://localhost:4000/api/auth/login/google/login");
 
   return (
     <div id="form" className={styles.signup}>
@@ -115,7 +117,7 @@ const Login = (): React.ReactNode => {
         <div id="liner" className={styles.liner} />
       </div>
       <div id="oauth" className={styles.oauth}>
-        <Button variant="default" size="icon">
+        <Button onClick={() => googleOauth()} variant="default" size="icon">
           <i className="fa-brands fa-google"></i>
         </Button>
         <Button variant="secondary" disabled size="icon">

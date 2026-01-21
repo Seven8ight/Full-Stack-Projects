@@ -18,6 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ChangeEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const Dashboard = (): React.ReactNode => {
   const { username, todos } = useProfile(),
@@ -25,6 +26,41 @@ const Dashboard = (): React.ReactNode => {
     [completed, setCompleted] = useState<number>(0),
     [inProgress, setInProgress] = useState<number>(0),
     [current, setCurrent] = useState<number>(0);
+
+  const searchParams = useSearchParams(),
+    oauth = searchParams.get("oauth");
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (oauth == "google") {
+      (async () => {
+        const fetchProfile = await fetch("/api/auth/google", {
+            method: "GET",
+            credentials: "include",
+          }),
+          fetchResponse = await fetchProfile.json();
+
+        if (!fetchProfile.ok) {
+          toast.error("Google login failed. Try again");
+          setTimeout(() => {
+            router.push("/auth/login");
+          }, 2500);
+          return;
+        }
+
+        toast.success("Google login successful");
+
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete("oauth");
+        router.replace(`${window.location.pathname}?${newParams.toString()}`);
+
+        localStorage.clear();
+        localStorage.setItem("accessToken", fetchResponse.accessToken);
+        localStorage.setItem("refreshToken", fetchResponse.refreshToken);
+      })();
+    }
+  }, []);
 
   useEffect(() => {
     setTTasks(() => {
@@ -114,7 +150,7 @@ const Dashboard = (): React.ReactNode => {
         <div id="text" className={styles.text}>
           <h3>Good morning, {username}</h3>
           <h2>
-            You have <span>49 tasks</span> completed this month
+            You have <span>{completed} tasks</span> completed this month
           </h2>
         </div>
         <div id="summary" className={styles.summary}>
@@ -196,18 +232,6 @@ const Dashboard = (): React.ReactNode => {
             </div>
           </div>
           <div id="todays-tasks" className={styles.todaystasks}>
-            {/* {Array.from({ length: 2 }).map((_, index) => (
-              <div id="task" key={index} className={styles.todaytask}>
-                <h4>Clean dishes</h4>
-                <p>Ensure to clean all the dishes in the house</p>
-                <p>
-                  Created at <span>1300hrs</span>
-                </p>
-                <p>
-                  Status: <span>Completed</span>
-                </p>
-              </div>
-            ))} */}
             {todaysTasks.length <= 0 && (
               <div id="no-tasks" className={styles.noTasks}>
                 <p>No tasks added, its a free day then</p>
