@@ -101,8 +101,12 @@ export const AuthController = (
                           },
                         );
 
-                      response.writeHead(200);
-                      response.end(JSON.stringify(encryptedGoogleUser));
+                      response.writeHead(302, {
+                        location:
+                          "http://localhost:3000/dashboard?oauth=google",
+                        "set-cookie": `tokens=${JSON.stringify(encryptedGoogleUser)}; HttpOnly; SameSite=Lax; Path=/`,
+                      });
+                      response.end();
                     }
                   });
                 },
@@ -182,8 +186,12 @@ export const AuthController = (
                           "google",
                         );
 
-                      response.writeHead(200);
-                      response.end(JSON.stringify(encryptedGoogleUser));
+                      response.writeHead(302, {
+                        location:
+                          "http://localhost:3000/dashboard?oauth=google",
+                        "set-cookie": `tokens=${JSON.stringify(encryptedGoogleUser)}; HttpOnly; SameSite=Lax; Path=/`,
+                      });
+                      response.end();
                     }
                   });
                 },
