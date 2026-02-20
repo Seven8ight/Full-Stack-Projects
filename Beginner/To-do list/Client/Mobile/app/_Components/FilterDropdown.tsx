@@ -1,21 +1,16 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
 const data = [
-  { label: "Complete", value: "complete" },
-  { label: "In progress", value: "in progress" },
+  { label: "Complete", value: "done" },
+  { label: "In progress", value: "progressing" },
   { label: "Incomplete", value: "Incomplete" },
 ];
 
-const DropdownComponent = ({
-  value,
-  setValue,
-}: {
-  value: string | null;
-  setValue: Dispatch<SetStateAction<string | null>>;
-}) => {
+const DropdownComponent = () => {
+  const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
 
   const renderLabel = () => {
