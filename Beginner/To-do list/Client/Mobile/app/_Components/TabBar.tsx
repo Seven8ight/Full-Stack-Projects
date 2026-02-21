@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { useEffect } from "react";
+import { useTheme } from "../_layout";
 
 const { width } = Dimensions.get("window");
 const TAB_BAR_WIDTH = width * 0.8;
@@ -16,6 +17,7 @@ export default function CustomTabBar({
   descriptors,
   navigation,
 }: BottomTabBarProps) {
+  const { theme } = useTheme();
   const translateX = useSharedValue(0);
   const tabWidth = TAB_BAR_WIDTH / state.routes.length;
 
@@ -28,7 +30,16 @@ export default function CustomTabBar({
 
   return (
     <View style={styles.tabBarContainer}>
-      <View style={[styles.tabBar, { width: TAB_BAR_WIDTH }]}>
+      <View
+        style={[
+          styles.tabBar,
+          {
+            backgroundColor:
+              theme == "light" ? "rgba(255,255,255,0.95)" : "#161618",
+            width: TAB_BAR_WIDTH,
+          },
+        ]}
+      >
         {/* 2. The Sliding Indicator */}
         <Animated.View
           style={[

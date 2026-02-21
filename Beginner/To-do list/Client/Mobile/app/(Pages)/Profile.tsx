@@ -1,12 +1,11 @@
 import { Feather } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
   Image,
   Pressable,
   Alert,
-  Platform,
   FlatList,
   Switch,
   useWindowDimensions,
@@ -18,20 +17,110 @@ import Modal from "react-native-modal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import { useUserObject } from "./_layout";
+import Toast from "react-native-toast-message";
+import { toastConfig } from "../_Components/ToastConfig";
+import { useTheme } from "../_layout";
 
-const AuthScreen = () => {
+const ProfilePage = () => {
   const [switchValue, setSwitch] = useState<boolean>(),
     [modal, setModal] = useState<boolean>(false),
-    [modalType, setType] = useState<"user profile" | "password" | null>(null),
-    { height } = useWindowDimensions();
+    [modalType, setType] = useState<
+      "user profile" | "password" | "email" | null
+    >(null),
+    { height } = useWindowDimensions(),
+    { userDetails, tasks, tokens, setUserDetails } = useUserObject();
 
-  const router = useRouter();
+  const router = useRouter(),
+    { theme } = useTheme();
 
-  const [username, setUsername] = useState<string>(""),
-    [email, setEmail] = useState<string>(""),
-    [password, setPassword] = useState<string>(""),
-    [confirmPass, setConfirmedPass] = useState<string>(""),
+  const [newDetails, setNewDetails] = useState({
+      username: "",
+      email: "",
+      password: "",
+      confirmPass: "",
+    }),
     [profileImage, setImage] = useState<string>("");
+
+  const doneTasks = useCallback(
+      () => tasks.filter((task) => task.status == "complete").length,
+      [tasks],
+    ),
+    inProgressTasks = useCallback(
+      () => tasks.filter((task) => task.status == "incomplete").length,
+      [tasks],
+    ),
+    incompleteTasks = useCallback(
+      () => tasks.filter((task) => task.status == "in progress").length,
+      [tasks],
+    );
+
+  const updateField = (key: string, value: string) => {
+      setNewDetails((details) => ({
+        ...details,
+        [key]: value,
+      }));
+    },
+    updateProfile = async () => {
+      let filledDetails: Record<string, string> = {};
+
+      for (let [key, value] of Object.entries(newDetails)) {
+        if (value.length > 0) filledDetails[key] = value;
+      }
+
+      if (filledDetails.password) {
+        if (filledDetails.confirmPass != filledDetails.password) {
+          Toast.show({
+            text1: "Error",
+            text2: "Passwords do not match",
+            type: "error",
+          });
+          return;
+        }
+      }
+
+      if (profileImage.length > 0) filledDetails["profileimage"] = profileImage;
+
+      try {
+        const updateRequest = await fetch(
+            "http://192.168.0.12:4000/api/users/edit",
+            {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${tokens?.accessToken}`,
+                "Content-type": "application/json",
+              },
+              body: JSON.stringify(filledDetails),
+            },
+          ),
+          updateResponse = await updateRequest.json();
+
+        if (!updateRequest.ok) {
+          Toast.show({
+            text1: "Error",
+            text2: `${updateResponse.error}`,
+            type: "error",
+          });
+          return;
+        }
+
+        Toast.show({
+          text1: "Success",
+          text2: "Update successful",
+          type: "success",
+        });
+
+        setUserDetails((user) => ({
+          ...updateResponse.updatedUser,
+        }));
+      } catch (error) {
+        Toast.show({
+          text1: "Error",
+          text2: `${(error as Error).message}`,
+          type: "error",
+        });
+      }
+    };
 
   const logOutHandler = async () => {
       Alert.alert("Log out", "Are you sure, this action is irreversible", [
@@ -74,8 +163,6 @@ const AuthScreen = () => {
         quality: 1,
       });
 
-      console.log(result);
-
       if (!result.canceled) {
         setImage(result.assets[0].uri);
       }
@@ -83,26 +170,23 @@ const AuthScreen = () => {
 
   useEffect(() => {
     if (!modal) {
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmedPass("");
+      setNewDetails({
+        username: "",
+        email: "",
+        password: "",
+        confirmPass: "",
+      });
       setImage("");
     }
   }, [modal]);
 
   return (
     <>
-      <ImageBackground
-        source={require("../../assets/images/topography.png")}
+      <View
         style={{
           flex: 1,
-          width: "100%",
-          height: "100%",
-          position: "absolute",
+          backgroundColor: theme == "light" ? "#FDFDFD" : "#121212",
         }}
-        resizeMode="cover"
-        imageStyle={{ width: "100%", height: "100%" }}
       >
         <SafeAreaView style={{ flex: 1 }}>
           {/* 1. Refined Header */}
@@ -111,7 +195,7 @@ const AuthScreen = () => {
               style={{
                 fontSize: 32,
                 fontWeight: "700",
-                color: "#1A1A1A",
+                color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                 marginBottom: 25,
               }}
             >
@@ -125,7 +209,8 @@ const AuthScreen = () => {
               marginHorizontal: 25,
               padding: 20,
               borderRadius: 28,
-              backgroundColor: "rgba(255, 255, 255, 0.95)", // Subtle translucency
+              backgroundColor:
+                theme == "light" ? "rgba(255, 255, 255, 0.95)" : "#1a1a1a", // Subtle translucency
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between", // Better than fixed 'left' offsets
@@ -139,24 +224,32 @@ const AuthScreen = () => {
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
-                source={require("./../../assets/images/icon.png")}
+                source={
+                  userDetails!.profileImage
+                    ? { uri: userDetails!.profileImage }
+                    : require("./../../assets/images/icon.png")
+                }
                 style={{
                   width: 65,
                   height: 65,
                   borderRadius: 32.5,
                   marginRight: 15,
                   borderWidth: 2,
-                  borderColor: "#fff",
+                  borderColor: theme == "light" ? "#fff" : "#121212",
                 }}
               />
               <View>
                 <Text
-                  style={{ fontSize: 20, fontWeight: "600", color: "#1A1A1A" }}
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "600",
+                    color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
+                  }}
                 >
-                  John Doe
+                  {userDetails!.username}
                 </Text>
                 <Text style={{ fontSize: 14, color: "#8E8E93", marginTop: 2 }}>
-                  jdoe@gmail.com
+                  {userDetails!.email}
                 </Text>
               </View>
             </View>
@@ -165,7 +258,11 @@ const AuthScreen = () => {
               onPress={() => logOutHandler()}
               style={({ pressed }) => ({
                 padding: 10,
-                backgroundColor: pressed ? "#FEE2E2" : "#FFF1F1",
+                backgroundColor: pressed
+                  ? "#FEE2E2"
+                  : theme == "light"
+                    ? "#FFF1F1"
+                    : "#0B0E11",
                 borderRadius: 12,
               })}
             >
@@ -179,7 +276,7 @@ const AuthScreen = () => {
               style={{
                 fontSize: 22,
                 fontWeight: "700",
-                color: "#1A1A1A",
+                color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                 marginBottom: 20,
               }}
             >
@@ -201,7 +298,7 @@ const AuthScreen = () => {
                       style={{
                         padding: 15,
                         borderRadius: 20,
-                        backgroundColor: "white",
+                        backgroundColor: theme == "light" ? "white" : "#121212",
                         borderWidth: 1,
                         borderColor: config.color + "30",
                         marginBottom: 10,
@@ -219,8 +316,26 @@ const AuthScreen = () => {
                         size={24}
                       />
                     </View>
-                    <Text style={{ fontSize: 16, fontWeight: "700" }}>0</Text>
-                    <Text style={{ fontSize: 11, color: "grey", marginTop: 2 }}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "700",
+                        color: theme == "light" ? "#121212" : "#f2f2f7",
+                      }}
+                    >
+                      {word == "Done"
+                        ? doneTasks()
+                        : word == "Progressing"
+                          ? inProgressTasks()
+                          : incompleteTasks()}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: theme == "light" ? "grey" : "#f2f2f7",
+                        marginTop: 2,
+                      }}
+                    >
                       {config.label}
                     </Text>
                   </View>
@@ -233,7 +348,7 @@ const AuthScreen = () => {
           <View style={{ paddingHorizontal: 25, flex: 1 }}>
             <FlatList
               data={[
-                { icon: "user", text: "User Profile" },
+                { icon: "user", text: "Change profile" },
                 { icon: "lock", text: "Change Password" },
                 { icon: "bell", text: "Push notifications" },
               ]}
@@ -244,7 +359,7 @@ const AuthScreen = () => {
                     item.text !== "Push notifications"
                       ? () => {
                           setType(
-                            item.text === "User Profile"
+                            item.text === "Change profile"
                               ? "user profile"
                               : "password",
                           );
@@ -253,7 +368,7 @@ const AuthScreen = () => {
                       : undefined
                   }
                   style={({ pressed }) => ({
-                    backgroundColor: "white",
+                    backgroundColor: theme == "light" ? "white" : "#1a1a1a",
                     padding: 16,
                     borderRadius: 20,
                     flexDirection: "row",
@@ -268,7 +383,7 @@ const AuthScreen = () => {
                       width: 40,
                       height: 40,
                       borderRadius: 12,
-                      backgroundColor: "#F8F9FA",
+                      backgroundColor: theme == "light" ? "#F8F9FA" : "#121212",
                       justifyContent: "center",
                       alignItems: "center",
                       marginRight: 15,
@@ -277,10 +392,17 @@ const AuthScreen = () => {
                     <Feather
                       name={item.icon as any}
                       size={20}
-                      color="#1A1A1A"
+                      color={theme == "light" ? "#1A1A1A" : "#f2f2f7"}
                     />
                   </View>
-                  <Text style={{ flex: 1, fontWeight: "600", fontSize: 15 }}>
+                  <Text
+                    style={{
+                      flex: 1,
+                      fontWeight: "600",
+                      fontSize: 15,
+                      color: theme == "light" ? "#1a1a1a" : "#f2f2f7",
+                    }}
+                  >
                     {item.text}
                   </Text>
 
@@ -329,6 +451,10 @@ const AuthScreen = () => {
                   paddingVertical: 10,
                   borderRadius: 15,
                 }}
+                onPress={() => {
+                  setType("email");
+                  setModal(true);
+                }}
               >
                 <Text style={{ fontWeight: "700", fontSize: 14 }}>
                   Write an email
@@ -337,7 +463,7 @@ const AuthScreen = () => {
             </View>
           </View>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
       <Modal
         style={{ margin: 0, justifyContent: "flex-end" }}
         isVisible={modal}
@@ -349,8 +475,13 @@ const AuthScreen = () => {
       >
         <View
           style={{
-            height: modalType === "user profile" ? height * 0.6 : height * 0.4,
-            backgroundColor: "#F8F9FA",
+            height:
+              modalType === "user profile"
+                ? height * 0.6
+                : modalType == "password"
+                  ? height * 0.4
+                  : height * 0.35,
+            backgroundColor: theme == "light" ? "#F8F9FA" : "#121212",
             borderTopLeftRadius: 35,
             borderTopRightRadius: 35,
             paddingHorizontal: 25,
@@ -373,7 +504,11 @@ const AuthScreen = () => {
             <View>
               <View style={{ marginBottom: 20 }}>
                 <Text
-                  style={{ fontSize: 26, fontWeight: "700", color: "#1A1A1A" }}
+                  style={{
+                    fontSize: 26,
+                    fontWeight: "700",
+                    color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
+                  }}
                 >
                   User Profile
                 </Text>
@@ -392,14 +527,16 @@ const AuthScreen = () => {
                     source={
                       profileImage.includes("file")
                         ? { uri: profileImage }
-                        : require("./../../assets/images/icon.png")
+                        : userDetails!.profileImage
+                          ? { uri: userDetails!.profileImage }
+                          : require("./../../assets/images/icon.png")
                     }
                     style={{
                       width: 100,
                       height: 100,
                       borderRadius: 50,
                       borderWidth: 4,
-                      borderColor: "white",
+                      borderColor: theme == "light" ? "white" : "#1f1f1f",
                     }}
                   />
                   <View
@@ -411,7 +548,7 @@ const AuthScreen = () => {
                       padding: 8,
                       borderRadius: 20,
                       borderWidth: 3,
-                      borderColor: "#F8F9FA",
+                      borderColor: theme == "light" ? "white" : "#1f1f1f",
                     }}
                   >
                     <Feather name="camera" size={14} color="white" />
@@ -444,6 +581,7 @@ const AuthScreen = () => {
                     fontSize: 16,
                     marginBottom: 20,
                   }}
+                  onChangeText={(text) => updateField("username", text)}
                 />
 
                 <Text
@@ -470,6 +608,7 @@ const AuthScreen = () => {
                     fontSize: 16,
                     marginBottom: 30,
                   }}
+                  onChangeText={(text) => updateField("email", text)}
                 />
 
                 <Pressable
@@ -481,6 +620,7 @@ const AuthScreen = () => {
                     opacity: pressed ? 0.9 : 1,
                     transform: [{ scale: pressed ? 0.98 : 1 }],
                   })}
+                  onPress={() => updateProfile()}
                 >
                   <Text
                     style={{ color: "#FFF", fontSize: 16, fontWeight: "600" }}
@@ -490,11 +630,15 @@ const AuthScreen = () => {
                 </Pressable>
               </View>
             </View>
-          ) : (
+          ) : modalType == "password" ? (
             <View>
               <View style={{ marginBottom: 25 }}>
                 <Text
-                  style={{ fontSize: 26, fontWeight: "700", color: "#1A1A1A" }}
+                  style={{
+                    fontSize: 26,
+                    fontWeight: "700",
+                    color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
+                  }}
                 >
                   Security
                 </Text>
@@ -516,6 +660,7 @@ const AuthScreen = () => {
                   fontSize: 16,
                   marginBottom: 20,
                 }}
+                onChangeText={(text) => updateField("password", text)}
               />
               <TextInput
                 placeholder="Confirm Password"
@@ -530,6 +675,7 @@ const AuthScreen = () => {
                   fontSize: 16,
                   marginBottom: 30,
                 }}
+                onChangeText={(text) => updateField("confirmPass", text)}
               />
 
               <Pressable
@@ -541,6 +687,7 @@ const AuthScreen = () => {
                   opacity: pressed ? 0.9 : 1,
                   transform: [{ scale: pressed ? 0.98 : 1 }],
                 })}
+                onPress={() => updateProfile()}
               >
                 <Text
                   style={{ color: "#FFF", fontSize: 16, fontWeight: "600" }}
@@ -549,24 +696,65 @@ const AuthScreen = () => {
                 </Text>
               </Pressable>
             </View>
+          ) : (
+            <View>
+              <View style={{ marginBottom: 25 }}>
+                <Text
+                  style={{
+                    fontSize: 26,
+                    fontWeight: "700",
+                    color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
+                  }}
+                >
+                  Feedback
+                </Text>
+                <Text style={{ color: "#8E8E93", marginTop: 4 }}>
+                  Express your concerns
+                </Text>
+              </View>
+
+              <TextInput
+                placeholder="Add your feedback here..."
+                placeholderTextColor="#A0A0A0"
+                multiline
+                numberOfLines={4}
+                style={{
+                  backgroundColor: "#FFF",
+                  padding: 16,
+                  borderRadius: 20,
+                  borderWidth: 1.5,
+                  borderColor: "#F0F0F0",
+                  fontSize: 16,
+                  height: 100,
+                  textAlignVertical: "top",
+                  marginBottom: 20,
+                }}
+              />
+
+              <Pressable
+                style={({ pressed }) => ({
+                  backgroundColor: "#000",
+                  paddingVertical: 18,
+                  borderRadius: 25,
+                  alignItems: "center",
+                  opacity: pressed ? 0.9 : 1,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
+                })}
+                onPress={() => updateProfile()}
+              >
+                <Text
+                  style={{ color: "#FFF", fontSize: 16, fontWeight: "600" }}
+                >
+                  Send Feedback
+                </Text>
+              </Pressable>
+            </View>
           )}
         </View>
       </Modal>
+      <Toast config={toastConfig} />
     </>
   );
 };
-// <View id="summary">
-//           <View id="done">
-//             <Text>Completed</Text>
-//             <Text>0</Text>
-//           </View>
-//           <View id="in progress">
-//             <Text>In progress</Text>
-//             <Text>0</Text>
-//           </View>
-//           <View id="incomplete">
-//             <Text>Completed</Text>
-//             <Text>0</Text>
-//           </View>
-//         </View>
-export default AuthScreen;
+
+export default ProfilePage;

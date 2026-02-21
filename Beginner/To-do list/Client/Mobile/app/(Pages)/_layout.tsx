@@ -9,6 +9,8 @@ import {
   SetStateAction,
 } from "react";
 import * as SecureStore from "expo-secure-store";
+import { StatusBar } from "react-native";
+import { useTheme } from "../_layout";
 
 export type Task = {
   id: string;
@@ -52,7 +54,8 @@ const RootLayout = () => {
     [refreshToken, setRToken] = useState<string | null>(""),
     [user, setUser] = useState<Record<string, any>>({}),
     [tasks, setTasks] = useState<Array<Task>>([]),
-    [error, setError] = useState<string | null>(null);
+    [error, setError] = useState<string | null>(null),
+    { theme } = useTheme();
 
   const fetchUserTasks = async (tokenToUse: string) => {
       try {
@@ -159,6 +162,7 @@ const RootLayout = () => {
         },
       }}
     >
+      <StatusBar backgroundColor={theme == "light" ? "black" : "white"} />
       <Tabs
         screenOptions={{
           headerShown: false,

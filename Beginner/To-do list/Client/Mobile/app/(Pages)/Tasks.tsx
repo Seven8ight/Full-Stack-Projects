@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TextInput,
   Alert,
   useWindowDimensions,
-  ImageBackground,
   KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +16,7 @@ import { Feather } from "@expo/vector-icons";
 import { useUserObject } from "./_layout";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "../_Components/ToastConfig";
+import { useTheme } from "../_layout";
 
 type Task = {
   title: string;
@@ -118,12 +118,23 @@ const TasksScreen = () => {
       normalize(new Date()),
     ),
     [selectedDateTasks, setDateTasks] = useState<Array<Task>>([]),
+    [filtered, setFiltered] = useState<boolean>(false),
+    [filteredTasks, setSelectedFilteredTasks] = useState<Array<Task>>([]),
+    [filteredTasksTitle, setFilteredTitle] = useState<string>(),
+    [filterDate, setFilterDate] = useState<Date>(new Date()),
     [dayTitle, setDayTitle] = useState<string>(formatDayTitle(selectedDate)),
+    [taskCategories, setTaskCategories] = useState<Array<string>>([]),
     [openMenuId, setOpenMenuId] = useState<string | null>(null),
     [taskId, setTaskId] = useState<string | null>(null),
     [openModal, setModal] = useState<boolean>(false),
     [modalType, setType] = useState<"edit" | "filter" | "add">("edit"),
-    { height } = useWindowDimensions();
+    { height } = useWindowDimensions(),
+    { theme } = useTheme();
+
+  const [selectedFilters, setSelectedFilters] = useState<{
+    time: string | null;
+    categories: string[];
+  }>({ time: null, categories: [] });
 
   const [newTaskDetails, setNewTaskDetails] = useState<
       Omit<Partial<Task>, "id" | "status">
@@ -138,20 +149,88 @@ const TasksScreen = () => {
     [content, setContent] = useState<string>(""),
     [category, setCategory] = useState<string>("");
 
-  const handleTaskDetails = (key: string, value: string) => {
-    setNewTaskDetails((details) => {
-      return {
-        ...details,
-        [key]: value,
-      };
-    });
-  };
+  const handleTaskDetails = useCallback((key: string, value: string) => {
+      setNewTaskDetails((details) => {
+        return {
+          ...details,
+          [key]: value,
+        };
+      });
+    }, []),
+    handleTaskFilters = useCallback((key: string, value: string) => {
+      if (key == "time")
+        setSelectedFilters((filters) => ({
+          ...filters,
+          time: value,
+        }));
+      else
+        setSelectedFilters((filters) => ({
+          ...filters,
+          categories: filters.categories.includes(value)
+            ? filters.categories.filter((filter) => filter != value)
+            : [...filters.categories, value],
+        }));
+    }, []),
+    applyFilters = useCallback(() => {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
 
-  const menuOptions = [
-      { label: "Edit", value: "edit" },
-      { label: "Delete", value: "delete" },
-    ],
-    handleMenuAction = (action: string, task: Task) => {
+      let targetDate: Date | null = null;
+
+      if (selectedFilters.time === "Yesterday") {
+        targetDate = yesterday;
+        setSelectedDate(yesterday);
+      } else {
+        targetDate = filterDate;
+        setSelectedDate(filterDate);
+      }
+
+      const result = tasks.filter((task) => {
+        const taskDate = new Date(task.created_at);
+
+        const dateMatch = targetDate ? isSameDay(taskDate, targetDate) : true;
+        const categoryMatch =
+          selectedFilters.categories.length === 0 ||
+          selectedFilters.categories.includes(task.category);
+
+        return dateMatch && categoryMatch;
+      });
+
+      const parts: string[] = [];
+      if (selectedFilters.time) {
+        parts.push(
+          selectedFilters.time == "Custom"
+            ? formatDayTitle(filterDate)
+            : formatDayTitle(targetDate),
+        );
+      }
+      if (selectedFilters.categories.length > 0)
+        parts.push(selectedFilters.categories.join(", "));
+
+      setFilteredTitle(parts.length > 0 ? `By ${parts.join(" · ")}` : "");
+      setSelectedFilteredTasks(result);
+      setFiltered(true);
+    }, [tasks, selectedFilters, selectedDate]),
+    clearFilters = useCallback(() => {
+      setSelectedFilters({
+        time: "",
+        categories: [],
+      });
+      setFiltered(false);
+      setFilteredTitle("");
+      setSelectedFilteredTasks([]);
+      setSelectedDate(new Date());
+    }, []);
+
+  const menuOptions = useMemo(
+      () => [
+        { label: "Edit", value: "edit" },
+        { label: "Delete", value: "delete" },
+      ],
+      [],
+    ),
+    handleMenuAction = useCallback((action: string, task: Task) => {
       if (action === "edit") {
         setModal(!openModal);
       }
@@ -161,18 +240,19 @@ const TasksScreen = () => {
           {
             text: "Delete",
             style: "destructive",
-            onPress: () => console.log("To be deleted"),
+            onPress: () => {
+              deleteTask(task.id);
+            },
           },
           {
             text: "Cancel",
             style: "cancel",
-            onPress: () => console.log("Cancelled"),
           },
         ]);
       }
       setTaskId(openMenuId);
       setOpenMenuId(null);
-    };
+    }, []);
 
   const week = getWeek(selectedDate);
 
@@ -192,7 +272,7 @@ const TasksScreen = () => {
             {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${tokens?.accessToken}`,
+                Authorization: `Bearer ${tokens!.accessToken}`,
               },
               body: JSON.stringify({
                 title: title,
@@ -288,27 +368,49 @@ const TasksScreen = () => {
         });
         return;
       }
+    },
+    deleteTask = async (taskId: string) => {
+      try {
+        const deleteRequest = await fetch(
+          `http://192.168.0.12:4000/api/todos/delete?type=one&todoid=${taskId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${tokens!.accessToken}`,
+            },
+          },
+        );
+
+        if (!deleteRequest.ok) {
+          let deleteResponse = await deleteRequest.json();
+
+          Toast.show({
+            text1: "Error",
+            text2: `${deleteResponse.error}`,
+            type: "error",
+          });
+          return;
+        }
+
+        Toast.show({
+          text1: "Success",
+          text2: "Task deleted successfully",
+          type: "success",
+        });
+
+        setTasks(tasks.filter((task) => task.id != taskId));
+      } catch (error) {
+        Toast.show({
+          text1: "Error",
+          text2: `${(error as Error).message}`,
+          type: "error",
+        });
+      }
     };
 
   useEffect(() => {
     const filtered = tasks.filter((task) => {
       const taskDate = new Date(task.created_at);
-      const currentDate = new Date();
-
-      return (
-        taskDate.getDate() === currentDate.getDate() &&
-        taskDate.getMonth() === currentDate.getMonth() &&
-        taskDate.getFullYear() === currentDate.getFullYear()
-      );
-    });
-
-    setDateTasks(filtered);
-  }, [tasks]);
-
-  useEffect(() => {
-    const filtered = tasks.filter((task) => {
-      const taskDate = new Date(task.created_at);
-
       return (
         taskDate.getDate() === selectedDate.getDate() &&
         taskDate.getMonth() === selectedDate.getMonth() &&
@@ -317,13 +419,20 @@ const TasksScreen = () => {
     });
     setDateTasks(filtered);
     setDayTitle(formatDayTitle(selectedDate));
-  }, [selectedDate]);
+
+    const allCategories = [...new Set(tasks.map((t) => t.category))];
+    setTaskCategories(allCategories);
+  }, [tasks, selectedDate]);
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FDFDFD" }}>
-        {/* 1. Improved Calendar Header */}
-        <View style={{ paddingHorizontal: 25, paddingTop: 10 }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: theme == "light" ? "#FDFDFD" : "#121212",
+        }}
+      >
+        <View id="header" style={{ paddingHorizontal: 25, paddingTop: 10 }}>
           <View
             style={{
               flexDirection: "row",
@@ -332,7 +441,13 @@ const TasksScreen = () => {
               marginBottom: 20,
             }}
           >
-            <Text style={{ fontSize: 28, fontWeight: "700", color: "#1A1A1A" }}>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "700",
+                color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+              }}
+            >
               Schedule
             </Text>
             <Pressable
@@ -342,12 +457,16 @@ const TasksScreen = () => {
               }}
               style={({ pressed }) => ({
                 padding: 10,
-                backgroundColor: "#F0F0F0",
+                backgroundColor: theme == "light" ? "#F0F0F0" : "#1a1a1a",
                 borderRadius: 12,
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <Feather name="sliders" size={20} color="#1A1A1A" />
+              <Feather
+                name="sliders"
+                size={20}
+                color={theme == "light" ? "#1A1A1A" : "#f2f2f7"}
+              />
             </Pressable>
           </View>
 
@@ -371,7 +490,11 @@ const TasksScreen = () => {
                     height: 75,
                     justifyContent: "center",
                     borderRadius: 20,
-                    backgroundColor: active ? "#1A1A1A" : "transparent",
+                    backgroundColor: active
+                      ? theme == "light"
+                        ? "#1A1A1A"
+                        : "#F2F2F7"
+                      : "transparent",
                     borderWidth: active ? 0 : 1,
                     borderColor: "#EEE",
                   }}
@@ -380,7 +503,13 @@ const TasksScreen = () => {
                     style={{
                       fontSize: 12,
                       fontWeight: "600",
-                      color: active ? "#FFF" : "#AAA",
+                      color: active
+                        ? theme == "light"
+                          ? "#FFF"
+                          : "#1A1A1A"
+                        : theme == "light"
+                          ? "#AAA"
+                          : "#F2F2F7",
                       marginBottom: 4,
                     }}
                   >
@@ -390,7 +519,14 @@ const TasksScreen = () => {
                     style={{
                       fontSize: 18,
                       fontWeight: "700",
-                      color: active ? "#FFF" : "#1A1A1A",
+
+                      color: active
+                        ? theme == "light"
+                          ? "#FFF"
+                          : "#1A1A1A"
+                        : theme == "light"
+                          ? "#1A1A1A"
+                          : "#F2F2F7",
                     }}
                   >
                     {item.getDate()}
@@ -401,33 +537,66 @@ const TasksScreen = () => {
           />
         </View>
 
-        {/* 2. Tasks List */}
-        <View style={{ flex: 1, paddingHorizontal: 25, marginTop: 10 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "700",
-              color: "#1A1A1A",
-              marginBottom: 15,
-            }}
+        <View
+          id="tasks"
+          style={{ flex: 1, paddingHorizontal: 25, marginTop: 10 }}
+        >
+          <View
+            id="title"
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            {dayTitle}
-          </Text>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "700",
+                color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+                marginBottom: 15,
+              }}
+            >
+              {dayTitle}
+            </Text>
+            {filteredTasks.length > 0 && (
+              <Pressable onPress={() => clearFilters()}>
+                <Text
+                  style={{
+                    alignSelf: "center",
+                    top: 6,
+                    fontSize: 14,
+                    color: "rgba(0,0,150,0.75)",
+                  }}
+                >
+                  Clear filter
+                </Text>
+              </Pressable>
+            )}
+          </View>
+          {filteredTasks.length > 0 && (
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: "#1A1A1A",
+                marginBottom: 15,
+              }}
+            >
+              {filteredTasksTitle}
+            </Text>
+          )}
 
           <FlatList
-            data={selectedDateTasks}
+            data={filtered ? filteredTasks : selectedDateTasks}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <View
                 style={{
-                  backgroundColor: "white",
+                  backgroundColor: theme == "light" ? "white" : "#1A1A1A",
                   borderRadius: 25,
                   padding: 20,
                   marginBottom: 15,
                   borderWidth: 1,
-                  borderColor: "#F0F0F0",
+                  borderColor: theme == "light" ? "#F0F0F0" : "#1A1A1A",
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.03,
@@ -446,7 +615,7 @@ const TasksScreen = () => {
                       style={{
                         fontSize: 18,
                         fontWeight: "700",
-                        color: "#1A1A1A",
+                        color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                       }}
                     >
                       {item.title}
@@ -481,12 +650,13 @@ const TasksScreen = () => {
                           position: "absolute",
                           top: 30,
                           right: 0,
-                          backgroundColor: "white",
+                          backgroundColor:
+                            theme == "light" ? "white" : "#1A1A1A",
                           zIndex: 999,
                           borderRadius: 15,
                           width: 120,
                           borderWidth: 1,
-                          borderColor: "#EEE",
+                          borderColor: theme == "light" ? "#EEE" : "#1A1A1A",
                           shadowColor: "#000",
                           shadowOffset: { width: 0, height: 10 },
                           shadowOpacity: 0.1,
@@ -510,7 +680,9 @@ const TasksScreen = () => {
                                 color:
                                   option.value === "delete"
                                     ? "#EF4444"
-                                    : "#1A1A1A",
+                                    : theme == "light"
+                                      ? "#1A1A1A"
+                                      : "#F2F2F7",
                                 fontWeight: "500",
                               }}
                             >
@@ -533,14 +705,18 @@ const TasksScreen = () => {
                 >
                   <View
                     style={{
-                      backgroundColor: "#F5F5F5",
+                      backgroundColor: theme == "light" ? "#F5F5F5" : "#0B0E11",
                       paddingHorizontal: 12,
                       paddingVertical: 4,
                       borderRadius: 8,
                     }}
                   >
                     <Text
-                      style={{ fontSize: 12, color: "#666", fontWeight: "600" }}
+                      style={{
+                        fontSize: 12,
+                        color: theme == "light" ? "#666" : "#A1A1AA",
+                        fontWeight: "600",
+                      }}
                     >
                       {item.category}
                     </Text>
@@ -573,12 +749,15 @@ const TasksScreen = () => {
               >
                 <Feather name="coffee" size={50} color="#EEE" />
                 <Text style={{ color: "#AAA", marginTop: 15, fontSize: 16 }}>
-                  No tasks for this day
+                  {filtered
+                    ? "No tasks of such filter"
+                    : "No tasks for this day"}
                 </Text>
               </View>
             )}
           />
         </View>
+
         <View id="add">
           <Pressable
             style={{
@@ -615,7 +794,7 @@ const TasksScreen = () => {
             style={{
               padding: 24,
               height: height * 0.835,
-              backgroundColor: "#fff",
+              backgroundColor: theme == "light" ? "#fff" : "#1A1A1A",
               borderTopLeftRadius: 30,
               borderTopRightRadius: 30,
             }}
@@ -636,7 +815,7 @@ const TasksScreen = () => {
               style={{
                 fontSize: 26,
                 fontWeight: "700",
-                color: "#1A1A1A",
+                color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                 marginBottom: 8,
               }}
             >
@@ -661,7 +840,7 @@ const TasksScreen = () => {
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: "#F9F9FB",
+                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                     padding: 16,
                     borderRadius: 15,
                     fontSize: 16,
@@ -688,7 +867,7 @@ const TasksScreen = () => {
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: "#F9F9FB",
+                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                     padding: 16,
                     borderRadius: 15,
                     fontSize: 16,
@@ -718,7 +897,7 @@ const TasksScreen = () => {
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: "#F9F9FB",
+                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                     padding: 16,
                     borderRadius: 15,
                     fontSize: 16,
@@ -781,7 +960,7 @@ const TasksScreen = () => {
           <View
             style={{
               height: height * 0.6,
-              backgroundColor: "white",
+              backgroundColor: theme == "light" ? "#fff" : "#1A1A1A",
               borderTopLeftRadius: 35,
               borderTopRightRadius: 35,
               padding: 25,
@@ -803,7 +982,7 @@ const TasksScreen = () => {
                 fontSize: 24,
                 fontWeight: "700",
                 marginBottom: 25,
-                color: "#1A1A1A",
+                color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
               }}
             >
               Filter Tasks
@@ -828,21 +1007,128 @@ const TasksScreen = () => {
                 marginBottom: 30,
               }}
             >
-              {["Today", "Last week", "Week before"].map((label) => (
-                <Pressable
-                  key={label}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 12,
-                    backgroundColor: "#F2F2F7",
+              {
+                <FlatList
+                  horizontal
+                  ItemSeparatorComponent={() => (
+                    <View id="separator" style={{ marginHorizontal: 5 }} />
+                  )}
+                  data={["Yesterday", "Custom"]}
+                  renderItem={({ item }) => {
+                    const selectedTime = selectedFilters.time == item;
+
+                    return (
+                      <Pressable
+                        key={item}
+                        style={{
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderRadius: 12,
+                          backgroundColor: selectedTime
+                            ? theme == "light"
+                              ? "rgba(220,220,220,0.75)"
+                              : "rgba(220,220,220,0.9)"
+                            : theme == "light"
+                              ? "#F2F2F7"
+                              : "#121212",
+                        }}
+                        onPress={() => {
+                          {
+                            handleTaskFilters("time", item);
+                          }
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: theme == "light" ? "#48484A" : "#f2f2f7",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {item}
+                        </Text>
+                      </Pressable>
+                    );
                   }}
-                >
-                  <Text style={{ color: "#48484A", fontWeight: "600" }}>
-                    {label}
-                  </Text>
-                </Pressable>
-              ))}
+                />
+              }
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                bottom: 15,
+                justifyContent: "space-between",
+              }}
+            >
+              {selectedFilters.time?.toLowerCase() == "custom" && (
+                <>
+                  <TextInput
+                    placeholder="date"
+                    keyboardType="decimal-pad"
+                    style={{
+                      textAlign: "center",
+                      backgroundColor: "white",
+                      padding: 10,
+                      width: 100,
+                      borderRadius: 10,
+                      borderWidth: 1.5,
+                      borderColor: "#EEE",
+                      fontSize: 16,
+                    }}
+                    onChangeText={(value) =>
+                      setFilterDate((prev) => {
+                        const next = new Date(prev); // ✅ new reference
+                        const parsed = parseInt(value);
+                        if (!isNaN(parsed)) next.setDate(parsed);
+                        return next;
+                      })
+                    }
+                  />
+                  <TextInput
+                    placeholder="month"
+                    keyboardType="decimal-pad"
+                    style={{
+                      backgroundColor: "white",
+                      textAlign: "center",
+                      padding: 10,
+                      width: 100,
+                      borderRadius: 10,
+                      borderWidth: 1.5,
+                      borderColor: "#EEE",
+                      fontSize: 16,
+                    }}
+                    onChangeText={(value) =>
+                      setFilterDate((prev) => {
+                        const next = new Date(prev); // ✅ new reference
+                        const parsed = parseInt(value);
+                        if (!isNaN(parsed)) next.setMonth(parsed);
+                        return next;
+                      })
+                    }
+                  />
+                  <TextInput
+                    placeholder="year"
+                    keyboardType="decimal-pad"
+                    style={{
+                      backgroundColor: "white",
+                      textAlign: "center",
+                      padding: 10,
+                      width: 100,
+                      borderRadius: 10,
+                      borderWidth: 1.5,
+                      borderColor: "#EEE",
+                      fontSize: 16,
+                    }}
+                    onChangeText={(value) =>
+                      setFilterDate((prev) => {
+                        const next = new Date(prev); // ✅ new reference
+                        const parsed = parseInt(value);
+                        if (!isNaN(parsed)) next.setFullYear(parsed);
+                        return next;
+                      })
+                    }
+                  />
+                </>
+              )}
             </View>
 
             <Text
@@ -856,35 +1142,53 @@ const TasksScreen = () => {
             >
               CATEGORY
             </Text>
-            <View style={{ gap: 10, marginBottom: 40 }}>
-              {["Work", "Personal", "Health", "Study"].map((cat) => (
-                <Pressable
-                  key={cat}
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: 16,
-                    borderRadius: 14,
-                    backgroundColor: "#F9F9FB",
-                    borderWidth: 1,
-                    borderColor: "#F2F2F7",
+            <View
+              style={{ gap: 10, marginBottom: 40, flex: 1, maxHeight: 210 }}
+            >
+              {
+                <FlatList
+                  scrollEnabled={true}
+                  data={taskCategories}
+                  ItemSeparatorComponent={() => (
+                    <View id="separator" style={{ marginVertical: 10 }} />
+                  )}
+                  renderItem={({ item }) => {
+                    let filterActive: boolean =
+                      selectedFilters.categories.includes(item);
+
+                    return (
+                      <Pressable
+                        key={item}
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: 16,
+                          borderRadius: 14,
+                          backgroundColor: "#F9F9FB",
+                          borderWidth: 1,
+                          borderColor: "#F2F2F7",
+                        }}
+                      >
+                        <Text style={{ fontWeight: "500", color: "#1C1C1E" }}>
+                          {item}
+                        </Text>
+                        <Pressable
+                          onPress={() => handleTaskFilters("category", item)}
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 6,
+                            borderWidth: 2,
+                            borderColor: "#E5E5EA",
+                            backgroundColor: filterActive ? "black" : "white",
+                          }}
+                        />
+                      </Pressable>
+                    );
                   }}
-                >
-                  <Text style={{ fontWeight: "500", color: "#1C1C1E" }}>
-                    {cat}
-                  </Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 6,
-                      borderWidth: 2,
-                      borderColor: "#E5E5EA",
-                    }}
-                  />
-                </Pressable>
-              ))}
+                />
+              }
             </View>
 
             <View style={{ flexDirection: "row", gap: 12 }}>
@@ -896,6 +1200,7 @@ const TasksScreen = () => {
                   backgroundColor: "#F2F2F7",
                   alignItems: "center",
                 }}
+                onPress={() => clearFilters()}
               >
                 <Text style={{ fontWeight: "700", color: "#48484A" }}>
                   Clear
@@ -910,6 +1215,7 @@ const TasksScreen = () => {
                   backgroundColor: "black",
                   alignItems: "center",
                 }}
+                onPress={() => applyFilters()}
               >
                 <Text style={{ color: "white", fontWeight: "700" }}>
                   Apply Filters
@@ -922,7 +1228,7 @@ const TasksScreen = () => {
             <View
               style={{
                 height: height * 0.6,
-                backgroundColor: "#F8F9FA",
+                backgroundColor: theme == "light" ? "#F8F9FA" : "#1A1A1A",
                 borderTopLeftRadius: 35,
                 borderTopRightRadius: 35,
                 paddingHorizontal: 25,
@@ -943,7 +1249,11 @@ const TasksScreen = () => {
 
               <View style={{ marginBottom: 25 }}>
                 <Text
-                  style={{ fontSize: 28, fontWeight: "700", color: "#1A1A1A" }}
+                  style={{
+                    fontSize: 28,
+                    fontWeight: "700",
+                    color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+                  }}
                 >
                   New Task
                 </Text>
@@ -969,7 +1279,7 @@ const TasksScreen = () => {
                   placeholder="e.g. Morning Yoga"
                   placeholderTextColor="#A0A0A0"
                   style={{
-                    backgroundColor: "#FFF",
+                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                     padding: 16,
                     borderRadius: 20,
                     borderWidth: 1.5,
@@ -999,7 +1309,7 @@ const TasksScreen = () => {
                   multiline
                   numberOfLines={4}
                   style={{
-                    backgroundColor: "#FFF",
+                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                     padding: 16,
                     borderRadius: 20,
                     borderWidth: 1.5,
@@ -1029,7 +1339,7 @@ const TasksScreen = () => {
                   placeholder="Work, Health, Personal..."
                   placeholderTextColor="#A0A0A0"
                   style={{
-                    backgroundColor: "#FFF",
+                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                     padding: 16,
                     borderRadius: 20,
                     borderWidth: 1.5,
@@ -1077,6 +1387,7 @@ const TasksScreen = () => {
           </KeyboardAvoidingView>
         )}
       </Modal>
+
       <Toast config={toastConfig} />
     </>
   );

@@ -6,7 +6,6 @@ import {
   Text,
   Image,
   Pressable,
-  useColorScheme,
   TextInput,
   useWindowDimensions,
   KeyboardAvoidingView,
@@ -17,8 +16,7 @@ import { useUserObject, Task } from "./_layout";
 import Modal from "react-native-modal";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "../_Components/ToastConfig";
-
-type BackgroundTheme = "light" | "dark";
+import { useTheme } from "../_layout";
 
 const greetingsFormatter = (): string => {
   const date = new Date(),
@@ -31,8 +29,7 @@ const greetingsFormatter = (): string => {
 
 const Dashboard = (): React.ReactNode => {
   const router = useRouter(),
-    currentTheme = useColorScheme(),
-    [theme, setTheme] = useState<BackgroundTheme>("light"),
+    { theme, setTheme } = useTheme(),
     [modal, setModal] = useState<boolean>(false),
     { height } = useWindowDimensions();
 
@@ -99,6 +96,10 @@ const Dashboard = (): React.ReactNode => {
           text2: "Task created successfully",
           type: "success",
         });
+
+        setTitle("");
+        setContent("");
+        setCategory("");
       } catch (error) {
         Toast.show({
           text1: "Error",
@@ -107,11 +108,6 @@ const Dashboard = (): React.ReactNode => {
         });
       }
     };
-
-  useEffect(() => {
-    if (currentTheme == "dark") setTheme("dark");
-    else setTheme("light");
-  }, []);
 
   useEffect(() => {
     if (!currentFilter) setSelectedTasks([]);
@@ -160,7 +156,7 @@ const Dashboard = (): React.ReactNode => {
             currentDate = new Date();
 
           if (
-            taskDate.getDate() + 1 == currentDate.getDate() &&
+            taskDate.getDate() == currentDate.getDate() &&
             task.status == "complete"
           )
             return task;
@@ -171,7 +167,12 @@ const Dashboard = (): React.ReactNode => {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FDFDFD" }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: theme == "light" ? "#FDFDFD" : "#121212",
+        }}
+      >
         {/* Header Section */}
         <View
           style={{
@@ -214,7 +215,11 @@ const Dashboard = (): React.ReactNode => {
               }}
               width={55}
               height={55}
-              source={require("./../../assets/images/react-logo.png")}
+              source={
+                userDetails?.profileImage
+                  ? { uri: userDetails?.profileImage }
+                  : require("./../../assets/images/react-logo.png")
+              }
             />
           </Pressable>
         </View>
@@ -231,7 +236,7 @@ const Dashboard = (): React.ReactNode => {
               fontSize: 32,
               fontWeight: "700",
               marginTop: 8,
-              color: "#1A1A1A",
+              color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
               lineHeight: 38,
             }}
           >
@@ -352,7 +357,7 @@ const Dashboard = (): React.ReactNode => {
                     style={{
                       padding: 18,
                       borderRadius: 22,
-                      backgroundColor: config.bg,
+                      backgroundColor: theme == "light" ? config.bg : "#1A1A1A",
                       borderWidth: 1.5,
                       borderColor: config.main + "20",
                     }}
@@ -396,7 +401,11 @@ const Dashboard = (): React.ReactNode => {
               }}
             >
               <Text
-                style={{ fontWeight: "700", fontSize: 24, color: "#1A1A1A" }}
+                style={{
+                  fontWeight: "700",
+                  fontSize: 24,
+                  color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+                }}
               >
                 Today's Tasks
               </Text>
@@ -463,7 +472,7 @@ const Dashboard = (): React.ReactNode => {
                     width: 240, // Slightly wider for better text fit
                     height: 180,
                     padding: 22,
-                    backgroundColor: "white",
+                    backgroundColor: theme == "light" ? "white" : "#1A1A1A",
                     borderRadius: 28,
                     marginRight: 20,
                     justifyContent: "space-between", // Key for layout consistency
@@ -479,7 +488,7 @@ const Dashboard = (): React.ReactNode => {
                       style={{
                         fontSize: 20,
                         fontWeight: "700",
-                        color: "#1A1A1A",
+                        color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                       }}
                       numberOfLines={1}
                     >
@@ -506,7 +515,8 @@ const Dashboard = (): React.ReactNode => {
                   >
                     <View
                       style={{
-                        backgroundColor: "#F2F2F7",
+                        backgroundColor:
+                          theme == "light" ? "#F2F2F7" : "#0B0E11",
                         paddingHorizontal: 10,
                         paddingVertical: 4,
                         borderRadius: 8,
@@ -529,7 +539,7 @@ const Dashboard = (): React.ReactNode => {
                         color:
                           item.status.toLowerCase() == "complete"
                             ? "#4CAF50"
-                            : item.status.toLowerCase() == "pending"
+                            : item.status.toLowerCase() == "in progress"
                               ? "#FFB347"
                               : "#FF5252",
                       }}
@@ -573,7 +583,7 @@ const Dashboard = (): React.ReactNode => {
           <View
             style={{
               height: height * 0.6,
-              backgroundColor: "#F8F9FA",
+              backgroundColor: theme == "light" ? "#F8F9FA" : "#1A1A1A",
               borderTopLeftRadius: 35,
               borderTopRightRadius: 35,
               paddingHorizontal: 25,
@@ -594,7 +604,11 @@ const Dashboard = (): React.ReactNode => {
 
             <View style={{ marginBottom: 25 }}>
               <Text
-                style={{ fontSize: 28, fontWeight: "700", color: "#1A1A1A" }}
+                style={{
+                  fontSize: 28,
+                  fontWeight: "700",
+                  color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+                }}
               >
                 New Task
               </Text>
@@ -620,7 +634,7 @@ const Dashboard = (): React.ReactNode => {
                 placeholder="e.g. Morning Yoga"
                 placeholderTextColor="#A0A0A0"
                 style={{
-                  backgroundColor: "#FFF",
+                  backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                   padding: 16,
                   borderRadius: 20,
                   borderWidth: 1.5,
@@ -650,7 +664,7 @@ const Dashboard = (): React.ReactNode => {
                 multiline
                 numberOfLines={4}
                 style={{
-                  backgroundColor: "#FFF",
+                  backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                   padding: 16,
                   borderRadius: 20,
                   borderWidth: 1.5,
@@ -680,7 +694,7 @@ const Dashboard = (): React.ReactNode => {
                 placeholder="Work, Health, Personal..."
                 placeholderTextColor="#A0A0A0"
                 style={{
-                  backgroundColor: "#FFF",
+                  backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
                   padding: 16,
                   borderRadius: 20,
                   borderWidth: 1.5,

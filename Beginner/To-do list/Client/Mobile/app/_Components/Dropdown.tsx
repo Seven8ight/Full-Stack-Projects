@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { useTheme } from "../_layout";
 
 const data = [
   { label: "Complete", value: "complete" },
@@ -16,6 +17,7 @@ const DropdownComponent = ({
   value: string | null;
   setValue: Dispatch<SetStateAction<string | null>>;
 }) => {
+  const { theme } = useTheme();
   const [isFocus, setIsFocus] = useState(false);
 
   const renderLabel = () => {
@@ -26,13 +28,41 @@ const DropdownComponent = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme == "light" ? "white" : "#1A1A1A",
+        },
+      ]}
+    >
       {renderLabel()}
       <Dropdown
-        style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
+        style={[
+          styles.dropdown,
+          isFocus && { borderColor: "blue" },
+          {
+            backgroundColor: theme == "light" ? "#F2F2F7" : "#1A1A1A",
+          },
+        ]}
+        placeholderStyle={[
+          styles.placeholderStyle,
+          {
+            color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+          },
+        ]}
+        selectedTextStyle={[
+          styles.selectedTextStyle,
+          {
+            color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+          },
+        ]}
+        inputSearchStyle={[
+          styles.inputSearchStyle,
+          {
+            color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
+          },
+        ]}
         iconStyle={styles.iconStyle}
         data={data}
         search
@@ -51,7 +81,7 @@ const DropdownComponent = ({
         renderLeftIcon={() => (
           <AntDesign
             style={styles.icon}
-            color={isFocus ? "blue" : "black"}
+            color={isFocus ? "blue" : theme == "light" ? "black" : "white"}
             name="alert"
             size={20}
           />
