@@ -16,7 +16,7 @@ export type tokens = {
 export type createUserDTO = Pick<User, "username" | "email"> & Partial<User>;
 
 export type createUserType = { type: "legacy" | "oAuth"; provider?: string };
-export type loginType = "google" | "legacy";
+export type loginType = "google" | "legacy" | "apple";
 
 export type PublicUser = Omit<User, "password" | "oAuth" | "oAuthProvider">;
 

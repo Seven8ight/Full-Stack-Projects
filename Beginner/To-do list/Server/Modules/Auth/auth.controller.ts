@@ -128,6 +128,20 @@ export const AuthController = (
               response.writeHead(201);
               response.end(JSON.stringify(encryptedGoogleUser));
             }
+          } else if (pathNames[3] == "apple") {
+            if (pathNames[4] == "mobile") {
+              const oauthUser: createUserDTO = {
+                  username: parsedRequestBody.name,
+                  email: parsedRequestBody.email,
+                },
+                encryptedAppleUser = await authService.register(oauthUser, {
+                  type: "oAuth",
+                  provider: "apple",
+                });
+
+              response.writeHead(201);
+              response.end(JSON.stringify(encryptedAppleUser));
+            }
           } else {
             response.writeHead(400);
             response.end(
@@ -225,6 +239,20 @@ export const AuthController = (
 
               response.writeHead(201);
               response.end(JSON.stringify(encryptedGoogleUser));
+            }
+          } else if (pathNames[3] == "apple") {
+            if (pathNames[4] == "mobile") {
+              const oauthUser: createUserDTO = {
+                  username: parsedRequestBody.name,
+                  email: parsedRequestBody.email,
+                },
+                encryptedAppleUser = await authService.login(
+                  oauthUser,
+                  "apple",
+                );
+
+              response.writeHead(201);
+              response.end(JSON.stringify(encryptedAppleUser));
             }
           } else {
             response.writeHead(400);
