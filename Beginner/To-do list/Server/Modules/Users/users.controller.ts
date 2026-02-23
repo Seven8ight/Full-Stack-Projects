@@ -58,12 +58,15 @@ export const UserController = (
             return;
           }
 
-          await Userservice.editUser(userId, parsedRequestBody);
+          const updatedUser = await Userservice.editUser(
+            userId,
+            parsedRequestBody,
+          );
 
-          response.writeHead(204);
+          response.writeHead(200);
           response.end(
             JSON.stringify({
-              message: "Edit successful",
+              updatedUser,
             }),
           );
 

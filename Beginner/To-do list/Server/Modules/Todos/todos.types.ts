@@ -4,7 +4,7 @@ export type Todo = {
   content: string;
   category: string;
   userId: string;
-  createdDate: Date;
+  created_at: string;
   status: "complete" | "incomplete" | "in progress";
 };
 

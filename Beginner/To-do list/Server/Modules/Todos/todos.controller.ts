@@ -49,11 +49,9 @@ export const TodoController = (
 
   request.on("end", async () => {
     try {
-      if (unparsedRequestBody.length <= 0) unparsedRequestBody = "{}";
-      let parsedRequestBody: any;
+      if (unparsedRequestBody.length == 0) unparsedRequestBody = "{}";
 
-      if (unparsedRequestBody.length > 0)
-        parsedRequestBody = JSON.parse(unparsedRequestBody);
+      let parsedRequestBody: any = JSON.parse(unparsedRequestBody);
 
       switch (pathNames[2]) {
         case "create":
@@ -192,6 +190,7 @@ export const TodoController = (
               }),
             );
           }
+
           break;
       }
     } catch (error) {

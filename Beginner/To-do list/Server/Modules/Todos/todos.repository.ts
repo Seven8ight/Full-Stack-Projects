@@ -92,7 +92,7 @@ export class TodoRepository implements ToDoInterface {
         [todoId, userId],
       );
     } catch (error) {
-      warningMsg("Delete user repo error occurred");
+      warningMsg("Delete todo repo error occurred");
       throw error;
     }
   }
@@ -100,7 +100,7 @@ export class TodoRepository implements ToDoInterface {
     try {
       await this.pgClient.query(`DELETE FROM todos WHERE user_id=$1`, [userId]);
     } catch (error) {
-      warningMsg("Delete user repo error occurred");
+      warningMsg("Delete all todos repo error occurred");
       throw error;
     }
   }

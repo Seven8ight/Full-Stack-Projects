@@ -15,7 +15,9 @@ export class UserRepository implements UserRepo {
       for (let [key, value] of Object.entries(newUserData)) {
         if (key == "password") value = hashPassword(value);
 
-        keys.push(`${key}=$${paramIndex++}`);
+        if (key.toLowerCase() == "profileimage")
+          keys.push(`profile_image=$${paramIndex++}`);
+        else keys.push(`${key}=$${paramIndex++}`);
         values.push(value);
       }
 
