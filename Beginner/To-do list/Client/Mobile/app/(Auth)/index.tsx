@@ -191,6 +191,7 @@ const Index = () => {
                     paddingHorizontal: 30,
                     alignItems: "center",
                     justifyContent: "center",
+                    backgroundColor: "transparent", // Semi-transparent white
                   }}
                 >
                   <Text
@@ -205,19 +206,20 @@ const Index = () => {
                   >
                     {item.title}
                   </Text>
-
-                  <Text
-                    style={{
-                      fontSize: 17,
-                      textAlign: "center",
-                      color: "#555",
-                      lineHeight: 24,
-                      fontWeight: "400",
-                      bottom: 20,
-                    }}
-                  >
-                    {item.description}
-                  </Text>
+                  {!item.description.includes("Join in to find") && (
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        textAlign: "center",
+                        color: "#555",
+                        lineHeight: 24,
+                        fontWeight: "400",
+                        bottom: 20,
+                      }}
+                    >
+                      {item.description}
+                    </Text>
+                  )}
 
                   {item.button && (
                     <Pressable
@@ -229,9 +231,9 @@ const Index = () => {
                       <AnimatedRN.View
                         style={[
                           {
-                            paddingVertical: 16,
-                            paddingHorizontal: 40,
-                            bottom: 35,
+                            paddingVertical: 10,
+                            paddingHorizontal: 30,
+                            bottom: 30,
                             backgroundColor: "coral",
                             borderRadius: 20,
                             shadowColor: "coral",
@@ -245,7 +247,7 @@ const Index = () => {
                         <Text
                           style={{
                             color: "white",
-                            fontSize: 18,
+                            fontSize: 17,
                             fontWeight: "700",
                           }}
                         >

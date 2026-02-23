@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import {
   View,
@@ -10,7 +10,7 @@ import {
   Switch,
   useWindowDimensions,
   TextInput,
-  ImageBackground,
+  Platform,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import Modal from "react-native-modal";
@@ -134,7 +134,7 @@ const ProfilePage = () => {
             if (accessToken) SecureStore.deleteItemAsync("accessToken");
             if (refreshToken) SecureStore.deleteItemAsync("refreshToken");
 
-            router.push("/(Auth)");
+            router.push("/(Auth)/Authentication");
           },
         },
         {
@@ -193,7 +193,7 @@ const ProfilePage = () => {
           <View style={{ paddingHorizontal: 25, paddingTop: 10 }}>
             <Text
               style={{
-                fontSize: 32,
+                fontSize: Platform.select({ ios: 32, android: 27 }),
                 fontWeight: "700",
                 color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                 marginBottom: 25,
@@ -230,8 +230,8 @@ const ProfilePage = () => {
                     : require("./../../assets/images/icon.png")
                 }
                 style={{
-                  width: 65,
-                  height: 65,
+                  width: Platform.select({ ios: 65, android: 50 }),
+                  height: Platform.select({ ios: 65, android: 50 }),
                   borderRadius: 32.5,
                   marginRight: 15,
                   borderWidth: 2,
@@ -241,14 +241,20 @@ const ProfilePage = () => {
               <View>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: Platform.select({ ios: 20, android: 16 }),
                     fontWeight: "600",
                     color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                   }}
                 >
                   {userDetails!.username}
                 </Text>
-                <Text style={{ fontSize: 14, color: "#8E8E93", marginTop: 2 }}>
+                <Text
+                  style={{
+                    fontSize: Platform.select({ ios: 14, android: 12 }),
+                    color: "#8E8E93",
+                    marginTop: 2,
+                  }}
+                >
                   {userDetails!.email}
                 </Text>
               </View>
@@ -266,7 +272,11 @@ const ProfilePage = () => {
                 borderRadius: 12,
               })}
             >
-              <Feather name="log-out" size={20} color="#EF4444" />
+              <Feather
+                name="log-out"
+                size={Platform.select({ ios: 20, android: 15 })}
+                color="#EF4444"
+              />
             </Pressable>
           </View>
 
@@ -274,10 +284,10 @@ const ProfilePage = () => {
           <View style={{ paddingHorizontal: 25, marginBottom: 30 }}>
             <Text
               style={{
-                fontSize: 22,
+                fontSize: Platform.select({ ios: 22, android: 19 }),
                 fontWeight: "700",
                 color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
-                marginBottom: 20,
+                marginBottom: Platform.select({ ios: 20, android: 17 }),
               }}
             >
               Task Summary
@@ -313,12 +323,12 @@ const ProfilePage = () => {
                               : "alert-octagon"
                         }
                         color={config.color}
-                        size={24}
+                        size={Platform.select({ ios: 24, android: 20 })}
                       />
                     </View>
                     <Text
                       style={{
-                        fontSize: 16,
+                        fontSize: Platform.select({ ios: 16, android: 14 }),
                         fontWeight: "700",
                         color: theme == "light" ? "#121212" : "#f2f2f7",
                       }}
@@ -331,7 +341,7 @@ const ProfilePage = () => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 11,
+                        fontSize: Platform.select({ ios: 11, android: 9 }),
                         color: theme == "light" ? "grey" : "#f2f2f7",
                         marginTop: 2,
                       }}
@@ -369,7 +379,7 @@ const ProfilePage = () => {
                   }
                   style={({ pressed }) => ({
                     backgroundColor: theme == "light" ? "white" : "#1a1a1a",
-                    padding: 16,
+                    padding: Platform.select({ ios: 16, android: 5 }),
                     borderRadius: 20,
                     flexDirection: "row",
                     alignItems: "center",
@@ -391,7 +401,7 @@ const ProfilePage = () => {
                   >
                     <Feather
                       name={item.icon as any}
-                      size={20}
+                      size={Platform.select({ ios: 20, android: 18 })}
                       color={theme == "light" ? "#1A1A1A" : "#f2f2f7"}
                     />
                   </View>
@@ -399,7 +409,7 @@ const ProfilePage = () => {
                     style={{
                       flex: 1,
                       fontWeight: "600",
-                      fontSize: 15,
+                      fontSize: Platform.select({ ios: 15, android: 13 }),
                       color: theme == "light" ? "#1a1a1a" : "#f2f2f7",
                     }}
                   >
@@ -424,11 +434,17 @@ const ProfilePage = () => {
           </View>
 
           {/* 5. Feedback Footer - Card Style */}
-          <View style={{ padding: 25, paddingBottom: 40, bottom: 50 }}>
+          <View
+            style={{
+              padding: 25,
+              paddingBottom: 40,
+              bottom: Platform.select({ ios: 50, android: 60 }),
+            }}
+          >
             <View
               style={{
                 backgroundColor: "#1A1A1A",
-                padding: 20,
+                padding: Platform.select({ ios: 20, android: 17 }),
                 borderRadius: 25,
                 alignItems: "center",
               }}
@@ -436,7 +452,7 @@ const ProfilePage = () => {
               <Text
                 style={{
                   color: "white",
-                  fontSize: 14,
+                  fontSize: Platform.select({ ios: 14, android: 11 }),
                   textAlign: "center",
                   opacity: 0.8,
                 }}
@@ -496,16 +512,20 @@ const ProfilePage = () => {
               backgroundColor: "#E0E0E0",
               borderRadius: 10,
               alignSelf: "center",
-              marginBottom: 25,
+              marginBottom: Platform.select({ ios: 25, android: 20 }),
             }}
           />
 
           {modalType === "user profile" ? (
             <View>
-              <View style={{ marginBottom: 20 }}>
+              <View
+                style={{
+                  marginBottom: Platform.select({ ios: 20, android: 10 }),
+                }}
+              >
                 <Text
                   style={{
-                    fontSize: 26,
+                    fontSize: Platform.select({ ios: 26, android: 22 }),
                     fontWeight: "700",
                     color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                   }}
@@ -532,8 +552,8 @@ const ProfilePage = () => {
                           : require("./../../assets/images/icon.png")
                     }
                     style={{
-                      width: 100,
-                      height: 100,
+                      width: Platform.select({ ios: 100, android: 75 }),
+                      height: Platform.select({ ios: 100, android: 75 }),
                       borderRadius: 50,
                       borderWidth: 4,
                       borderColor: theme == "light" ? "white" : "#1f1f1f",
@@ -551,16 +571,22 @@ const ProfilePage = () => {
                       borderColor: theme == "light" ? "white" : "#1f1f1f",
                     }}
                   >
-                    <Feather name="camera" size={14} color="white" />
+                    <Feather
+                      name="camera"
+                      size={Platform.select({ ios: 14, android: 12 })}
+                      color="white"
+                    />
                   </View>
                 </Pressable>
               </View>
 
               {/* Form Fields */}
-              <View style={{ marginTop: 10 }}>
+              <View
+                style={{ marginTop: Platform.select({ ios: 10, android: 5 }) }}
+              >
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: Platform.select({ ios: 14, android: 11 }),
                     fontWeight: "600",
                     color: "#555",
                     marginLeft: 8,
@@ -574,11 +600,11 @@ const ProfilePage = () => {
                   placeholderTextColor="#A0A0A0"
                   style={{
                     backgroundColor: "#FFF",
-                    padding: 16,
-                    borderRadius: 20,
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
                     borderWidth: 1.5,
                     borderColor: "#F0F0F0",
-                    fontSize: 16,
+                    fontSize: Platform.select({ ios: 16, android: 13 }),
                     marginBottom: 20,
                   }}
                   onChangeText={(text) => updateField("username", text)}
@@ -601,12 +627,12 @@ const ProfilePage = () => {
                   keyboardType="email-address"
                   style={{
                     backgroundColor: "#FFF",
-                    padding: 16,
-                    borderRadius: 20,
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
                     borderWidth: 1.5,
                     borderColor: "#F0F0F0",
-                    fontSize: 16,
-                    marginBottom: 30,
+                    fontSize: Platform.select({ ios: 16, android: 13 }),
+                    marginBottom: 20,
                   }}
                   onChangeText={(text) => updateField("email", text)}
                 />
@@ -635,7 +661,7 @@ const ProfilePage = () => {
               <View style={{ marginBottom: 25 }}>
                 <Text
                   style={{
-                    fontSize: 26,
+                    fontSize: Platform.select({ ios: 26, android: 22 }),
                     fontWeight: "700",
                     color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                   }}
@@ -653,11 +679,11 @@ const ProfilePage = () => {
                 secureTextEntry
                 style={{
                   backgroundColor: "#FFF",
-                  padding: 16,
-                  borderRadius: 20,
+                  padding: Platform.select({ ios: 16, android: 10 }),
+                  borderRadius: Platform.select({ ios: 20, android: 15 }),
                   borderWidth: 1.5,
                   borderColor: "#F0F0F0",
-                  fontSize: 16,
+                  fontSize: Platform.select({ ios: 16, android: 13 }),
                   marginBottom: 20,
                 }}
                 onChangeText={(text) => updateField("password", text)}
@@ -668,12 +694,12 @@ const ProfilePage = () => {
                 secureTextEntry
                 style={{
                   backgroundColor: "#FFF",
-                  padding: 16,
-                  borderRadius: 20,
+                  padding: Platform.select({ ios: 16, android: 10 }),
+                  borderRadius: Platform.select({ ios: 20, android: 15 }),
                   borderWidth: 1.5,
                   borderColor: "#F0F0F0",
-                  fontSize: 16,
-                  marginBottom: 30,
+                  fontSize: Platform.select({ ios: 16, android: 13 }),
+                  marginBottom: 20,
                 }}
                 onChangeText={(text) => updateField("confirmPass", text)}
               />
@@ -701,7 +727,7 @@ const ProfilePage = () => {
               <View style={{ marginBottom: 25 }}>
                 <Text
                   style={{
-                    fontSize: 26,
+                    fontSize: Platform.select({ ios: 26, android: 22 }),
                     fontWeight: "700",
                     color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                   }}
@@ -720,13 +746,12 @@ const ProfilePage = () => {
                 numberOfLines={4}
                 style={{
                   backgroundColor: "#FFF",
-                  padding: 16,
-                  borderRadius: 20,
+                  padding: Platform.select({ ios: 16, android: 10 }),
+                  borderRadius: Platform.select({ ios: 20, android: 15 }),
+                  height: 50,
                   borderWidth: 1.5,
                   borderColor: "#F0F0F0",
-                  fontSize: 16,
-                  height: 100,
-                  textAlignVertical: "top",
+                  fontSize: Platform.select({ ios: 16, android: 13 }),
                   marginBottom: 20,
                 }}
               />

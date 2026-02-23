@@ -162,7 +162,15 @@ const RootLayout = () => {
         },
       }}
     >
-      <StatusBar backgroundColor={theme == "light" ? "black" : "white"} />
+      <StatusBar
+        // 1. Make the background transparent on Android
+        backgroundColor="transparent"
+        translucent={true}
+        // 2. This controls the ICON colors (The important part!)
+        // 'dark-content' = Black icons (use for light theme)
+        // 'light-content' = White icons (use for dark theme)
+        barStyle={theme === "light" ? "dark-content" : "light-content"}
+      />
       <Tabs
         screenOptions={{
           headerShown: false,

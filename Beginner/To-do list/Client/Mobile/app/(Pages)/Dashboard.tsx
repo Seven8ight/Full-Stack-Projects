@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   KeyboardAvoidingView,
   FlatList,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUserObject, Task } from "./_layout";
@@ -17,6 +18,12 @@ import Modal from "react-native-modal";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "../_Components/ToastConfig";
 import { useTheme } from "../_layout";
+import {
+  moderateScale,
+  normalizeFont,
+  scale,
+  verticalScale,
+} from "./../../utils/Scale";
 
 const greetingsFormatter = (): string => {
   const date = new Date(),
@@ -61,7 +68,7 @@ const Dashboard = (): React.ReactNode => {
         }
 
         const taskCreation: Response = await fetch(
-            "http://localhost:4000/api/todos/create",
+            "http://192.168.0.12:4000/api/todos/create",
             {
               method: "POST",
               headers: {
@@ -185,8 +192,8 @@ const Dashboard = (): React.ReactNode => {
         >
           <Pressable
             style={({ pressed }) => ({
-              width: 50,
-              height: 50,
+              width: Platform.select({ ios: 50, android: 45 }),
+              height: Platform.select({ ios: 50, android: 45 }),
               borderRadius: 25,
               backgroundColor: theme === "light" ? "#F0F0F0" : "#333",
               justifyContent: "center",
@@ -213,8 +220,8 @@ const Dashboard = (): React.ReactNode => {
                 shadowOpacity: 0.1,
                 shadowRadius: 8,
               }}
-              width={55}
-              height={55}
+              width={Platform.select({ ios: 55, android: 45 })}
+              height={Platform.select({ ios: 55, android: 45 })}
               source={
                 userDetails?.profileImage
                   ? { uri: userDetails?.profileImage }
@@ -226,18 +233,28 @@ const Dashboard = (): React.ReactNode => {
 
         {/* Intro Text */}
         <View
-          style={{ paddingHorizontal: 30, marginTop: 10, marginBottom: 25 }}
+          style={{
+            paddingHorizontal: moderateScale(30),
+            marginTop: moderateScale(10),
+            marginBottom: moderateScale(25),
+          }}
         >
-          <Text style={{ fontSize: 18, color: "#8E8E93", fontWeight: "500" }}>
+          <Text
+            style={{
+              fontSize: scale(16),
+              color: "#8E8E93",
+              fontWeight: "500",
+            }}
+          >
             {greetingsFormatter()}, {userDetails!.username}! 👋
           </Text>
           <Text
             style={{
-              fontSize: 32,
-              fontWeight: "700",
+              fontSize: moderateScale(28),
+              fontWeight: Platform.select({ ios: "700", android: "800" }),
               marginTop: 8,
               color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
-              lineHeight: 38,
+              lineHeight: Platform.select({ ios: 38, android: 30 }),
             }}
           >
             You have{" "}
@@ -255,11 +272,11 @@ const Dashboard = (): React.ReactNode => {
               width: "100%",
               backgroundColor: "#000",
               borderRadius: 25,
-              padding: 20,
+              padding: moderateScale(18),
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 30,
+              marginBottom: moderateScale(30),
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 10 },
               shadowOpacity: 0.2,
@@ -273,7 +290,7 @@ const Dashboard = (): React.ReactNode => {
                   color: "rgba(255,255,255,0.6)",
                   fontSize: 13,
                   fontWeight: "600",
-                  marginBottom: 2.5,
+                  marginBottom: moderateScale(2.5),
                 }}
               >
                 DAILY GOAL
@@ -281,10 +298,10 @@ const Dashboard = (): React.ReactNode => {
               <Text
                 style={{
                   color: "#FFF",
-                  fontSize: 20,
+                  fontSize: normalizeFont(17),
                   fontWeight: "700",
-                  marginTop: 4,
-                  marginBottom: 2,
+                  marginTop: moderateScale(4),
+                  marginBottom: moderateScale(2),
                 }}
               >
                 {doneTasks.length >= 3 ? "Almost there! 🚀" : "Get it done ✍️"}
@@ -292,8 +309,8 @@ const Dashboard = (): React.ReactNode => {
               <Text
                 style={{
                   color: "rgba(255,255,255,0.8)",
-                  fontSize: 14,
-                  marginTop: 2,
+                  fontSize: normalizeFont(12),
+                  marginTop: moderateScale(2),
                 }}
               >
                 {doneTasks.length}/5 tasks completed
@@ -303,8 +320,8 @@ const Dashboard = (): React.ReactNode => {
             {/* A Simple Progress Percentage */}
             <View
               style={{
-                width: 65,
-                height: 65,
+                width: moderateScale(65),
+                height: verticalScale(65),
                 borderRadius: 35,
                 borderWidth: 5,
                 borderColor: "rgba(255,255,255,0.1)",
@@ -325,7 +342,7 @@ const Dashboard = (): React.ReactNode => {
             contentContainerStyle={{
               flex: 1,
               justifyContent: "space-around",
-              marginBottom: 35,
+              marginBottom: Platform.select({ ios: 35, android: 25 }),
             }}
             scrollEnabled={false}
             renderItem={({ item }) => {
@@ -355,7 +372,7 @@ const Dashboard = (): React.ReactNode => {
                 >
                   <View
                     style={{
-                      padding: 18,
+                      padding: moderateScale(15),
                       borderRadius: 22,
                       backgroundColor: theme == "light" ? config.bg : "#1A1A1A",
                       borderWidth: 1.5,
@@ -371,15 +388,15 @@ const Dashboard = (): React.ReactNode => {
                             : "alert-octagon"
                       }
                       color={config.main}
-                      size={26}
+                      size={moderateScale(20)}
                     />
                   </View>
                   <Text
                     style={{
                       textAlign: "center",
-                      marginTop: 8,
+                      marginTop: verticalScale(8),
                       fontWeight: "600",
-                      fontSize: 13,
+                      fontSize: normalizeFont(13),
                       color: "#444",
                     }}
                   >
@@ -397,13 +414,13 @@ const Dashboard = (): React.ReactNode => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: 20,
+                marginBottom: verticalScale(20),
               }}
             >
               <Text
                 style={{
                   fontWeight: "700",
-                  fontSize: 24,
+                  fontSize: normalizeFont(20),
                   color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                 }}
               >
@@ -426,8 +443,10 @@ const Dashboard = (): React.ReactNode => {
               ListEmptyComponent={() => (
                 <View
                   style={{
-                    width: 380,
-                    height: 240,
+                    width: moderateScale(300),
+                    maxWidth: 380,
+                    height: verticalScale(175),
+                    maxHeight: 240,
                     backgroundColor: "#F9F9F9",
                     borderRadius: 25,
                     borderStyle: "dashed",
@@ -452,15 +471,19 @@ const Dashboard = (): React.ReactNode => {
                       bottom: 15,
                       right: 15,
                       backgroundColor: "#000",
-                      width: 45,
-                      height: 45,
+                      width: moderateScale(35),
+                      height: verticalScale(35),
                       borderRadius: 22.5,
                       justifyContent: "center",
                       alignItems: "center",
                     }}
                     onPress={() => setModal(true)}
                   >
-                    <Feather name="plus" size={24} color="white" />
+                    <Feather
+                      name="plus"
+                      size={Platform.select({ ios: 24, android: 20 })}
+                      color="white"
+                    />
                   </Pressable>
                 </View>
               )}
@@ -469,8 +492,8 @@ const Dashboard = (): React.ReactNode => {
                 <View
                   key={item.id}
                   style={{
-                    width: 240, // Slightly wider for better text fit
-                    height: 180,
+                    width: Platform.select({ ios: 240, android: 200 }), // Slightly wider for better text fit
+                    height: Platform.select({ ios: 180, android: 160 }),
                     padding: 22,
                     backgroundColor: theme == "light" ? "white" : "#1A1A1A",
                     borderRadius: 28,
@@ -486,7 +509,7 @@ const Dashboard = (): React.ReactNode => {
                   <View>
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Platform.select({ ios: 20, android: 16 }),
                         fontWeight: "700",
                         color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                       }}
@@ -498,7 +521,7 @@ const Dashboard = (): React.ReactNode => {
                       style={{
                         color: "#8E8E93",
                         marginTop: 8,
-                        fontSize: 14,
+                        fontSize: Platform.select({ ios: 14, android: 11 }),
                       }}
                       numberOfLines={2}
                     >
@@ -524,7 +547,7 @@ const Dashboard = (): React.ReactNode => {
                     >
                       <Text
                         style={{
-                          fontSize: 12,
+                          fontSize: Platform.select({ ios: 12, android: 9 }),
                           color: "#666",
                           fontWeight: "600",
                         }}
@@ -535,7 +558,7 @@ const Dashboard = (): React.ReactNode => {
                     <Text
                       style={{
                         fontWeight: "700",
-                        fontSize: 13,
+                        fontSize: Platform.select({ ios: 13, android: 10 }),
                         color:
                           item.status.toLowerCase() == "complete"
                             ? "#4CAF50"
@@ -554,18 +577,22 @@ const Dashboard = (): React.ReactNode => {
               <Pressable
                 style={{
                   position: "absolute",
-                  bottom: -40,
+                  bottom: Platform.select({ ios: -40, android: -20 }),
                   right: 15,
                   backgroundColor: "#000",
-                  width: 45,
-                  height: 45,
+                  width: Platform.select({ ios: 45, android: 35 }),
+                  height: Platform.select({ ios: 45, android: 35 }),
                   borderRadius: 22.5,
                   justifyContent: "center",
                   alignItems: "center",
                 }}
                 onPress={() => setModal(true)}
               >
-                <Feather name="plus" size={24} color="white" />
+                <Feather
+                  name="plus"
+                  size={Platform.select({ ios: 24, android: 20 })}
+                  color="white"
+                />
               </Pressable>
             )}
           </View>
@@ -602,10 +629,14 @@ const Dashboard = (): React.ReactNode => {
               }}
             />
 
-            <View style={{ marginBottom: 25 }}>
+            <View
+              style={{
+                marginBottom: Platform.select({ ios: 25, android: 17 }),
+              }}
+            >
               <Text
                 style={{
-                  fontSize: 28,
+                  fontSize: Platform.select({ ios: 28, android: 22 }),
                   fontWeight: "700",
                   color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                 }}
@@ -621,7 +652,7 @@ const Dashboard = (): React.ReactNode => {
               {/* Title Input */}
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: Platform.select({ ios: 14, android: 12 }),
                   fontWeight: "600",
                   color: "#555",
                   marginLeft: 8,
@@ -635,8 +666,8 @@ const Dashboard = (): React.ReactNode => {
                 placeholderTextColor="#A0A0A0"
                 style={{
                   backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                  padding: 16,
-                  borderRadius: 20,
+                  padding: Platform.select({ ios: 16, android: 10 }),
+                  borderRadius: Platform.select({ ios: 20, android: 15 }),
                   borderWidth: 1.5,
                   borderColor: "#F0F0F0",
                   fontSize: 16,
@@ -649,7 +680,7 @@ const Dashboard = (): React.ReactNode => {
               {/* Content Input */}
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: Platform.select({ ios: 14, android: 12 }),
                   fontWeight: "600",
                   color: "#555",
                   marginLeft: 8,
@@ -662,17 +693,17 @@ const Dashboard = (): React.ReactNode => {
                 placeholder="Add details about this task..."
                 placeholderTextColor="#A0A0A0"
                 multiline
-                numberOfLines={4}
+                numberOfLines={Platform.select({ ios: 4, android: 2 })}
                 style={{
                   backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                  padding: 16,
-                  borderRadius: 20,
+                  padding: Platform.select({ ios: 16, android: 12 }),
+                  borderRadius: Platform.select({ ios: 20, android: 15 }),
                   borderWidth: 1.5,
                   borderColor: "#F0F0F0",
                   fontSize: 16,
-                  height: 100,
+                  height: Platform.select({ ios: 100, android: 75 }),
                   textAlignVertical: "top",
-                  marginBottom: 20,
+                  marginBottom: Platform.select({ ios: 20, android: 15 }),
                 }}
                 value={content}
                 onChangeText={setContent}
@@ -681,11 +712,11 @@ const Dashboard = (): React.ReactNode => {
               {/* Category Input */}
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: Platform.select({ ios: 14, android: 12 }),
                   fontWeight: "600",
                   color: "#555",
                   marginLeft: 8,
-                  marginBottom: 8,
+                  marginBottom: Platform.select({ ios: 8, android: 6 }),
                 }}
               >
                 Category
@@ -695,12 +726,12 @@ const Dashboard = (): React.ReactNode => {
                 placeholderTextColor="#A0A0A0"
                 style={{
                   backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                  padding: 16,
-                  borderRadius: 20,
+                  padding: Platform.select({ ios: 16, android: 10 }),
+                  borderRadius: Platform.select({ ios: 20, android: 15 }),
                   borderWidth: 1.5,
                   borderColor: "#F0F0F0",
                   fontSize: 16,
-                  marginBottom: 30,
+                  marginBottom: Platform.select({ ios: 30, android: 20 }),
                 }}
                 value={category}
                 onChangeText={setCategory}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   useWindowDimensions,
   KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Modal from "react-native-modal";
@@ -231,6 +232,8 @@ const TasksScreen = () => {
       [],
     ),
     handleMenuAction = useCallback((action: string, task: Task) => {
+      setTaskId(task.id);
+
       if (action === "edit") {
         setModal(!openModal);
       }
@@ -250,7 +253,6 @@ const TasksScreen = () => {
           },
         ]);
       }
-      setTaskId(openMenuId);
       setOpenMenuId(null);
     }, []);
 
@@ -268,7 +270,7 @@ const TasksScreen = () => {
         }
 
         const taskCreation: Response = await fetch(
-            "http://localhost:4000/api/todos/create",
+            "http://192.168.0.12:4000/api/todos/create",
             {
               method: "POST",
               headers: {
@@ -438,12 +440,12 @@ const TasksScreen = () => {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 20,
+              marginBottom: Platform.select({ ios: 20, android: 15 }),
             }}
           >
             <Text
               style={{
-                fontSize: 28,
+                fontSize: Platform.select({ ios: 28, android: 24 }),
                 fontWeight: "700",
                 color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
               }}
@@ -464,7 +466,7 @@ const TasksScreen = () => {
             >
               <Feather
                 name="sliders"
-                size={20}
+                size={Platform.select({ ios: 20, android: 18 })}
                 color={theme == "light" ? "#1A1A1A" : "#f2f2f7"}
               />
             </Pressable>
@@ -487,7 +489,7 @@ const TasksScreen = () => {
                     alignItems: "center",
                     marginRight: 20,
                     width: 55,
-                    height: 75,
+                    height: Platform.select({ ios: 75, android: 65 }),
                     justifyContent: "center",
                     borderRadius: 20,
                     backgroundColor: active
@@ -501,7 +503,7 @@ const TasksScreen = () => {
                 >
                   <Text
                     style={{
-                      fontSize: 12,
+                      fontSize: Platform.select({ ios: 12, android: 10 }),
                       fontWeight: "600",
                       color: active
                         ? theme == "light"
@@ -510,14 +512,14 @@ const TasksScreen = () => {
                         : theme == "light"
                           ? "#AAA"
                           : "#F2F2F7",
-                      marginBottom: 4,
+                      marginBottom: Platform.select({ ios: 4, android: 2 }),
                     }}
                   >
                     {getDayLabel(item.getDay()).toUpperCase()}
                   </Text>
                   <Text
                     style={{
-                      fontSize: 18,
+                      fontSize: Platform.select({ ios: 18, android: 16 }),
                       fontWeight: "700",
 
                       color: active
@@ -539,7 +541,11 @@ const TasksScreen = () => {
 
         <View
           id="tasks"
-          style={{ flex: 1, paddingHorizontal: 25, marginTop: 10 }}
+          style={{
+            flex: 1,
+            paddingHorizontal: 25,
+            marginTop: Platform.select({ ios: 10, android: 5 }),
+          }}
         >
           <View
             id="title"
@@ -550,7 +556,7 @@ const TasksScreen = () => {
                 fontSize: 20,
                 fontWeight: "700",
                 color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
-                marginBottom: 15,
+                marginBottom: Platform.select({ ios: 15, android: 10 }),
               }}
             >
               {dayTitle}
@@ -593,7 +599,7 @@ const TasksScreen = () => {
                 style={{
                   backgroundColor: theme == "light" ? "white" : "#1A1A1A",
                   borderRadius: 25,
-                  padding: 20,
+                  padding: Platform.select({ ios: 20, android: 15 }),
                   marginBottom: 15,
                   borderWidth: 1,
                   borderColor: theme == "light" ? "#F0F0F0" : "#1A1A1A",
@@ -613,7 +619,7 @@ const TasksScreen = () => {
                   <View style={{ flex: 1, marginRight: 10 }}>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: Platform.select({ ios: 18, android: 16 }),
                         fontWeight: "700",
                         color: theme == "light" ? "#1A1A1A" : "#f2f2f7",
                       }}
@@ -624,7 +630,7 @@ const TasksScreen = () => {
                       style={{
                         color: "#8E8E93",
                         marginTop: 4,
-                        fontSize: 14,
+                        fontSize: Platform.select({ ios: 14, android: 12 }),
                         lineHeight: 20,
                       }}
                       numberOfLines={2}
@@ -713,7 +719,7 @@ const TasksScreen = () => {
                   >
                     <Text
                       style={{
-                        fontSize: 12,
+                        fontSize: Platform.select({ ios: 12, android: 10 }),
                         color: theme == "light" ? "#666" : "#A1A1AA",
                         fontWeight: "600",
                       }}
@@ -723,7 +729,7 @@ const TasksScreen = () => {
                   </View>
                   <Text
                     style={{
-                      fontSize: 13,
+                      fontSize: Platform.select({ ios: 13, android: 11 }),
                       fontWeight: "700",
                       color:
                         item.status.toLowerCase() === "complete"
@@ -744,7 +750,7 @@ const TasksScreen = () => {
                   flex: 1,
                   alignItems: "center",
                   marginTop: 100,
-                  top: 100,
+                  top: Platform.select({ ios: 100, android: 50 }),
                 }}
               >
                 <Feather name="coffee" size={50} color="#EEE" />
@@ -762,7 +768,7 @@ const TasksScreen = () => {
           <Pressable
             style={{
               position: "absolute",
-              bottom: 100,
+              bottom: Platform.select({ ios: 100, android: 110 }),
               right: 28,
               backgroundColor: "#000",
               width: 45,
@@ -813,7 +819,7 @@ const TasksScreen = () => {
 
             <Text
               style={{
-                fontSize: 26,
+                fontSize: Platform.select({ ios: 26, android: 22 }),
                 fontWeight: "700",
                 color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                 marginBottom: 8,
@@ -840,12 +846,13 @@ const TasksScreen = () => {
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                    padding: 16,
-                    borderRadius: 15,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: "#F2F2F7",
+                    backgroundColor: theme == "light" ? "#FFF" : "#f2f2f7",
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
+                    borderWidth: 1.5,
+                    borderColor: "#F0F0F0",
+                    fontSize: Platform.select({ ios: 16, android: 13 }),
+                    marginBottom: Platform.select({ ios: 20, android: 10 }),
                   }}
                   placeholder="Task title"
                   value={newTaskDetails.title}
@@ -867,14 +874,14 @@ const TasksScreen = () => {
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                    padding: 16,
-                    borderRadius: 15,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: "#F2F2F7",
-                    height: 80,
-                    textAlignVertical: "top",
+                    backgroundColor: theme == "light" ? "#FFF" : "#f2f2f7",
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
+                    borderWidth: 1.5,
+                    height: 50,
+                    borderColor: "#F0F0F0",
+                    fontSize: Platform.select({ ios: 16, android: 13 }),
+                    marginBottom: Platform.select({ ios: 20, android: 10 }),
                   }}
                   placeholder="Task description"
                   multiline
@@ -897,12 +904,13 @@ const TasksScreen = () => {
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                    padding: 16,
-                    borderRadius: 15,
-                    fontSize: 16,
-                    borderWidth: 1,
-                    borderColor: "#F2F2F7",
+                    backgroundColor: theme == "light" ? "#FFF" : "#f2f2f7",
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
+                    borderWidth: 1.5,
+                    borderColor: "#F0F0F0",
+                    fontSize: Platform.select({ ios: 16, android: 13 }),
+                    marginBottom: Platform.select({ ios: 20, android: 10 }),
                   }}
                   placeholder="e.g. Work"
                   value={newTaskDetails.category}
@@ -916,7 +924,7 @@ const TasksScreen = () => {
                     fontSize: 13,
                     fontWeight: "700",
                     color: "#AEAEB2",
-                    marginBottom: 8,
+                    marginBottom: Platform.select({ ios: 8, android: 4 }),
                     marginLeft: 4,
                   }}
                 >
@@ -927,7 +935,7 @@ const TasksScreen = () => {
 
               <Pressable
                 style={({ pressed }) => ({
-                  marginTop: 15,
+                  marginTop: Platform.select({ ios: 15, android: 5 }),
                   backgroundColor: "black",
                   padding: 20,
                   borderRadius: 18,
@@ -937,7 +945,11 @@ const TasksScreen = () => {
                 onPress={() => updateTask(taskId!)}
               >
                 <Text
-                  style={{ color: "white", fontWeight: "700", fontSize: 16 }}
+                  style={{
+                    color: "white",
+                    fontWeight: "700",
+                    fontSize: Platform.select({ ios: 16, android: 12 }),
+                  }}
                 >
                   Update Task
                 </Text>
@@ -947,7 +959,7 @@ const TasksScreen = () => {
             <Text
               style={{
                 textAlign: "center",
-                marginTop: 25,
+                marginTop: Platform.select({ ios: 25, android: 15 }),
                 color: "#C7C7CD",
                 fontSize: 12,
                 fontStyle: "italic",
@@ -973,13 +985,13 @@ const TasksScreen = () => {
                 backgroundColor: "#F2F2F7",
                 borderRadius: 10,
                 alignSelf: "center",
-                marginBottom: 25,
+                marginBottom: Platform.select({ ios: 25, android: 15 }),
               }}
             />
 
             <Text
               style={{
-                fontSize: 24,
+                fontSize: Platform.select({ ios: 24, android: 20 }),
                 fontWeight: "700",
                 marginBottom: 25,
                 color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
@@ -1152,6 +1164,19 @@ const TasksScreen = () => {
                   ItemSeparatorComponent={() => (
                     <View id="separator" style={{ marginVertical: 10 }} />
                   )}
+                  ListEmptyComponent={() => (
+                    <View
+                      style={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: 100,
+                      }}
+                    >
+                      <Text style={{ color: "grey", top: 5 }}>
+                        No Categories
+                      </Text>
+                    </View>
+                  )}
                   renderItem={({ item }) => {
                     let filterActive: boolean =
                       selectedFilters.categories.includes(item);
@@ -1247,10 +1272,14 @@ const TasksScreen = () => {
                 }}
               />
 
-              <View style={{ marginBottom: 25 }}>
+              <View
+                style={{
+                  marginBottom: Platform.select({ ios: 25, android: 17 }),
+                }}
+              >
                 <Text
                   style={{
-                    fontSize: 28,
+                    fontSize: Platform.select({ ios: 28, android: 22 }),
                     fontWeight: "700",
                     color: theme == "light" ? "#1A1A1A" : "#F2F2F7",
                   }}
@@ -1266,7 +1295,7 @@ const TasksScreen = () => {
                 {/* Title Input */}
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: Platform.select({ ios: 14, android: 12 }),
                     fontWeight: "600",
                     color: "#555",
                     marginLeft: 8,
@@ -1280,8 +1309,8 @@ const TasksScreen = () => {
                   placeholderTextColor="#A0A0A0"
                   style={{
                     backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                    padding: 16,
-                    borderRadius: 20,
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
                     borderWidth: 1.5,
                     borderColor: "#F0F0F0",
                     fontSize: 16,
@@ -1294,7 +1323,7 @@ const TasksScreen = () => {
                 {/* Content Input */}
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: Platform.select({ ios: 14, android: 12 }),
                     fontWeight: "600",
                     color: "#555",
                     marginLeft: 8,
@@ -1307,17 +1336,17 @@ const TasksScreen = () => {
                   placeholder="Add details about this task..."
                   placeholderTextColor="#A0A0A0"
                   multiline
-                  numberOfLines={4}
+                  numberOfLines={Platform.select({ ios: 4, android: 2 })}
                   style={{
                     backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                    padding: 16,
-                    borderRadius: 20,
+                    padding: Platform.select({ ios: 16, android: 12 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
                     borderWidth: 1.5,
                     borderColor: "#F0F0F0",
                     fontSize: 16,
-                    height: 100,
+                    height: Platform.select({ ios: 100, android: 75 }),
                     textAlignVertical: "top",
-                    marginBottom: 20,
+                    marginBottom: Platform.select({ ios: 20, android: 15 }),
                   }}
                   value={content}
                   onChangeText={setContent}
@@ -1326,11 +1355,11 @@ const TasksScreen = () => {
                 {/* Category Input */}
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: Platform.select({ ios: 14, android: 12 }),
                     fontWeight: "600",
                     color: "#555",
                     marginLeft: 8,
-                    marginBottom: 8,
+                    marginBottom: Platform.select({ ios: 8, android: 6 }),
                   }}
                 >
                   Category
@@ -1340,12 +1369,12 @@ const TasksScreen = () => {
                   placeholderTextColor="#A0A0A0"
                   style={{
                     backgroundColor: theme == "light" ? "#FFF" : "#F2F2F7",
-                    padding: 16,
-                    borderRadius: 20,
+                    padding: Platform.select({ ios: 16, android: 10 }),
+                    borderRadius: Platform.select({ ios: 20, android: 15 }),
                     borderWidth: 1.5,
                     borderColor: "#F0F0F0",
                     fontSize: 16,
-                    marginBottom: 30,
+                    marginBottom: Platform.select({ ios: 30, android: 20 }),
                   }}
                   value={category}
                   onChangeText={setCategory}

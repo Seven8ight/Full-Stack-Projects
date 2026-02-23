@@ -1,6 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Dimensions,
+  Platform,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -29,7 +36,15 @@ export default function CustomTabBar({
   }, [state.index]);
 
   return (
-    <View style={styles.tabBarContainer}>
+    <View
+      style={[
+        styles.tabBarContainer,
+        {
+          bottom: Platform.select({ ios: 30, android: 40 }),
+          height: Platform.select({ ios: 70, android: 50 }),
+        },
+      ]}
+    >
       <View
         style={[
           styles.tabBar,
@@ -120,7 +135,7 @@ function TabIcon({
     <Animated.View style={[animatedIconStyle, { alignItems: "center" }]}>
       <Feather
         name={name}
-        size={22}
+        size={Platform.select({ ios: 22, android: 20 })}
         color={isFocused ? "#1A1A1A" : "#999"} // Swapped purple for black to match your new theme
       />
       <Text
@@ -129,6 +144,7 @@ function TabIcon({
           {
             color: isFocused ? "#1A1A1A" : "#999",
             fontWeight: isFocused ? "700" : "500",
+            fontSize: 9,
           },
         ]}
       >
