@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -26,9 +26,11 @@ import {
   CalendarDays,
   PlusCircle,
   Circle,
+  Loader2,
 } from "lucide-react";
 
-const Dashboard = (): React.ReactNode => {
+// 1. Move the logic into a separate inner component
+const DashboardContent = () => {
   const { username, todos } = useProfile(),
     [todaysTasks, setTTasks] = useState<Todo[]>([]),
     [monthTasks, setMTasks] = useState<Todo[]>(),
@@ -41,37 +43,39 @@ const Dashboard = (): React.ReactNode => {
 
   const router = useRouter();
 
-  // --- Retained OAuth Logic ---
+  // --- OAuth Logic ---
   useEffect(() => {
-    if (oauth == "google") {
+    if (oauth === "google") {
       (async () => {
-        const fetchProfile = await fetch("/api/auth/google", {
+        try {
+          const fetchProfile = await fetch("/api/auth/google", {
             method: "GET",
             credentials: "include",
-          }),
-          fetchResponse = await fetchProfile.json();
+          });
+          const fetchResponse = await fetchProfile.json();
 
-        if (!fetchProfile.ok) {
-          toast.error("Google login failed. Try again");
-          setTimeout(() => {
-            router.push("/auth/login");
-          }, 2500);
-          return;
+          if (!fetchProfile.ok) {
+            toast.error("Google login failed. Try again");
+            setTimeout(() => router.push("/auth/login"), 2500);
+            return;
+          }
+
+          toast.success("Google login successful");
+          const newParams = new URLSearchParams(searchParams.toString());
+          newParams.delete("oauth");
+          router.replace(`${window.location.pathname}?${newParams.toString()}`);
+
+          localStorage.clear();
+          localStorage.setItem("accessToken", fetchResponse.accessToken);
+          localStorage.setItem("refreshToken", fetchResponse.refreshToken);
+        } catch (err) {
+          toast.error("Internal connection error");
         }
-
-        toast.success("Google login successful");
-        const newParams = new URLSearchParams(searchParams.toString());
-        newParams.delete("oauth");
-        router.replace(`${window.location.pathname}?${newParams.toString()}`);
-
-        localStorage.clear();
-        localStorage.setItem("accessToken", fetchResponse.accessToken);
-        localStorage.setItem("refreshToken", fetchResponse.refreshToken);
       })();
     }
   }, [oauth, router, searchParams]);
 
-  // --- Retained Counter Logic ---
+  // --- Counter Logic ---
   useEffect(() => {
     setTTasks(() => {
       const today = new Date().getDate();
@@ -82,31 +86,29 @@ const Dashboard = (): React.ReactNode => {
     });
     setCompleted(
       todos.reduce(
-        (count, todo) => (todo.status == "complete" ? count + 1 : count),
+        (count, todo) => (todo.status === "complete" ? count + 1 : count),
         0,
       ),
     );
     setInProgress(
       todos.reduce(
-        (count, todo) => (todo.status == "in progress" ? count + 1 : count),
+        (count, todo) => (todo.status === "in progress" ? count + 1 : count),
         0,
       ),
     );
     setCurrent(
       todos.reduce(
-        (count, todo) => (todo.status == "incomplete" ? count + 1 : count),
+        (count, todo) => (todo.status === "incomplete" ? count + 1 : count),
         0,
       ),
     );
     setMTasks(() => {
       const today = new Date();
-
       return todos.filter((todo) => {
         const taskDate = new Date(todo.created_at);
-
         return (
-          taskDate.getMonth() == today.getMonth() &&
-          taskDate.getFullYear() == today.getFullYear()
+          taskDate.getMonth() === today.getMonth() &&
+          taskDate.getFullYear() === today.getFullYear()
         );
       });
     });
@@ -138,12 +140,12 @@ const Dashboard = (): React.ReactNode => {
       }
     }
     try {
-      const addRequest: Response = await fetch("/api/todos", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify(details),
-        }),
-        addResponse = await addRequest.json();
+      const addRequest = await fetch("/api/todos", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify(details),
+      });
+      const addResponse = await addRequest.json();
       if (!addRequest.ok) {
         toast.error(`${addResponse.error}`);
         return;
@@ -157,39 +159,38 @@ const Dashboard = (): React.ReactNode => {
   return (
     <div className="container mx-auto max-w-5xl p-6 pt-24 space-y-8">
       {/* Welcome Header */}
-      <header className="space-y-2 text-left">
-        <h3 className="text-zinc-500 font-medium">Good morning, {username}</h3>
-        <h1 className="text-3xl font-bold tracking-tight">
-          You have {monthTasks?.length}{" "}
-          <span className="text-zinc-900 dark:text-zinc-100">
-            {monthTasks?.length == 1 ? "task" : "tasks"}
-          </span>{" "}
-          this month
+      <header className="space-y-2 text-left animate-in fade-in slide-in-from-top-4 duration-500">
+        <h3 className="text-zinc-500 font-medium italic">
+          Good morning, {username}
+        </h3>
+        <h1 className="text-3xl font-black tracking-tight uppercase">
+          Month Overview:{" "}
+          <span className="text-zinc-400">{monthTasks?.length || 0} Tasks</span>
         </h1>
       </header>
 
       {/* Summary Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-6 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 space-y-2">
+        <div className="p-6 rounded-2xl border bg-white shadow-sm dark:bg-zinc-900 space-y-2 border-b-4 border-b-blue-500">
           <ListTodo className="h-5 w-5 text-blue-500" />
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
             Pending
           </p>
-          <p className="text-3xl font-bold">{current}</p>
+          <p className="text-3xl font-black">{current}</p>
         </div>
-        <div className="p-6 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 space-y-2">
+        <div className="p-6 rounded-2xl border bg-white shadow-sm dark:bg-zinc-900 space-y-2 border-b-4 border-b-amber-500">
           <Clock className="h-5 w-5 text-amber-500" />
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            In Progress
+          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+            Working
           </p>
-          <p className="text-3xl font-bold">{inProgress}</p>
+          <p className="text-3xl font-black">{inProgress}</p>
         </div>
-        <div className="p-6 rounded-xl border bg-white shadow-sm dark:bg-zinc-900 space-y-2">
+        <div className="p-6 rounded-2xl border bg-white shadow-sm dark:bg-zinc-900 space-y-2 border-b-4 border-b-emerald-500">
           <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
             Completed
           </p>
-          <p className="text-3xl font-bold">{completed}</p>
+          <p className="text-3xl font-black">{completed}</p>
         </div>
       </div>
 
@@ -197,56 +198,68 @@ const Dashboard = (): React.ReactNode => {
       <section className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              Today's tasks <CalendarDays size={20} className="text-zinc-400" />
+            <h2 className="text-xl font-bold flex items-center gap-2 tracking-tight">
+              Today's Agenda{" "}
+              <CalendarDays size={20} className="text-zinc-400" />
             </h2>
-            <p className="text-sm text-zinc-500">
-              Kick start the day with some progressive tasks
+            <p className="text-sm text-zinc-500 italic">
+              Focused progress for a productive day
             </p>
           </div>
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="gap-2 shadow-sm">
-                <Plus size={18} /> Add Task
+              <Button className="gap-2 shadow-lg rounded-xl font-bold">
+                <Plus size={18} /> New Task
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md rounded-2xl">
               <DialogHeader>
-                <DialogTitle>Create new task</DialogTitle>
+                <DialogTitle className="text-xl font-black">
+                  Create new task
+                </DialogTitle>
                 <DialogDescription>
                   Add a new todo for the day to track your progress.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Title</Label>
+                  <Label className="font-bold uppercase text-[10px] tracking-widest">
+                    Title
+                  </Label>
                   <Input
                     onChange={(e) => inputHandler(e, "title")}
                     placeholder="e.g. Finish Project UI"
+                    className="rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Category</Label>
+                  <Label className="font-bold uppercase text-[10px] tracking-widest">
+                    Category
+                  </Label>
                   <Input
                     onChange={(e) => inputHandler(e, "category")}
                     placeholder="e.g. Work, Personal"
+                    className="rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
+                  <Label className="font-bold uppercase text-[10px] tracking-widest">
+                    Description
+                  </Label>
                   <Textarea
                     onChange={(e) => inputHandler(e, "content")}
-                    placeholder="What are we doing currently?"
+                    placeholder="Task details..."
                     rows={4}
+                    className="rounded-xl"
                   />
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="gap-2">
                 <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="ghost">Cancel</Button>
                 </DialogClose>
-                <Button onClick={addTaskHandler} className="gap-2">
+                <Button onClick={addTaskHandler} className="gap-2 rounded-xl">
                   <PlusCircle size={18} /> Create task
                 </Button>
               </DialogFooter>
@@ -257,47 +270,61 @@ const Dashboard = (): React.ReactNode => {
         {/* Task List */}
         <div className="grid gap-3">
           {todaysTasks.length <= 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 text-zinc-400">
-              <Circle className="mb-2 opacity-20" size={40} />
-              <p>No tasks added yet. It's a free day!</p>
+            <div className="flex flex-col items-center justify-center p-16 rounded-[2rem] border border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 bg-zinc-50/50 dark:bg-zinc-950/50">
+              <Circle className="mb-4 opacity-10" size={56} />
+              <p className="font-medium">All clear! No tasks for today.</p>
             </div>
           ) : (
-            todaysTasks.map((todo, index) => {
-              const todoDate = new Date(todo.created_at);
-              const formattedDate = todoDate.toLocaleDateString();
-
-              return (
-                <div
-                  key={index}
-                  className="p-4 rounded-lg border bg-white dark:bg-zinc-900 hover:border-zinc-400 transition-colors flex items-start justify-between shadow-sm"
-                >
-                  <div className="space-y-1 text-left">
-                    <h4 className="font-semibold text-lg">{todo.title}</h4>
-                    <p className="text-sm text-zinc-500 leading-relaxed">
-                      {todo.content}
-                    </p>
-                    <div className="flex items-center gap-4 pt-2 text-[10px] font-bold uppercase tracking-widest">
-                      <span className="flex items-center gap-1 text-zinc-400">
-                        <CalendarDays size={12} /> {formattedDate}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full border ${
-                          todo.status === "complete"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800"
-                            : "bg-zinc-50 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
-                        }`}
-                      >
-                        {todo.status}
-                      </span>
-                    </div>
+            todaysTasks.map((todo, index) => (
+              <div
+                key={index}
+                className="p-5 rounded-2xl border bg-white dark:bg-zinc-900 hover:shadow-md transition-all flex items-start justify-between group"
+              >
+                <div className="space-y-2 text-left">
+                  <h4 className="font-bold text-lg group-hover:text-blue-500 transition-colors tracking-tight">
+                    {todo.title}
+                  </h4>
+                  <p className="text-sm text-zinc-500 leading-relaxed max-w-2xl">
+                    {todo.content}
+                  </p>
+                  <div className="flex items-center gap-4 pt-3 text-[9px] font-black uppercase tracking-[0.15em]">
+                    <span className="flex items-center gap-1.5 text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
+                      <CalendarDays size={10} />{" "}
+                      {new Date(todo.created_at).toLocaleDateString()}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded-md border ${
+                        todo.status === "complete"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/10 dark:text-emerald-400 dark:border-emerald-900"
+                          : "bg-zinc-50 text-zinc-500 border-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-800"
+                      }`}
+                    >
+                      {todo.status}
+                    </span>
                   </div>
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
       </section>
     </div>
+  );
+};
+
+// 2. Wrap the component with Suspense in the export
+const Dashboard = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center gap-3 text-zinc-500 font-bold uppercase tracking-widest text-xs">
+          <Loader2 className="animate-spin" size={20} />
+          Synchronizing...
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 };
 
