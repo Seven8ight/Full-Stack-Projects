@@ -27,7 +27,7 @@ const migrationsDir = path.join(__dirname, "SQL Tables");
 
       info("Migrations table created");
     }
-    console.log(pgClient);
+
     const sqlFiles = (await fs.readdir(migrationsDir))
       .sort()
       .filter((file) => file.endsWith(".sql"));
