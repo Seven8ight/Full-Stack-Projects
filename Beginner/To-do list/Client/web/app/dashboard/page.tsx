@@ -105,7 +105,7 @@ const Dashboard = (): React.ReactNode => {
         const taskDate = new Date(todo.created_at);
 
         return (
-          taskDate.getMonth() == today.getMonth() + 1 &&
+          taskDate.getMonth() == today.getMonth() &&
           taskDate.getFullYear() == today.getFullYear()
         );
       });

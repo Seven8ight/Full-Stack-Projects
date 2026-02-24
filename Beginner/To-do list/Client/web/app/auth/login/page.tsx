@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useState } from "react";
 import { Mail, Lock, LogIn } from "lucide-react"; // Icons for a modern touch
-import styles from "./page.module.scss";
 
 type details = {
   email: string;
