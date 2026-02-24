@@ -13,8 +13,7 @@ export const POSTGRES_USERNAME = process.env.PG_USERNAME,
   POSTGRES_DATABASE = process.env.PG_DATABASE,
   POSTGRES_PASSWORD = process.env.PG_PASSWORD,
   POSTGRES_PORT = process.env.PG_PORT,
-  DATABASE_URL = process.env.DATABASE_URL,
-  LOCAL_DATABASE_URL = process.env.LOCAL_DB_URL;
+  DATABASE_URL = process.env.DATABASE_URL;
 
 export const SERVER_PORT = process.env.SERVER_PORT,
   JWT_ACCESS_TOKEN = process.env.JWT_ACCESS_TOKEN,

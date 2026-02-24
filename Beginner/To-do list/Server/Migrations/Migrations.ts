@@ -1,17 +1,33 @@
 import fs from "fs/promises";
 import path from "path";
-import URL from "url";
 import { connectToDatabase, pgClient } from "../Config/Database.js";
 import { errorMsg, info, warningMsg } from "../Utils/Logger.js";
+import { fileURLToPath } from "url";
 
-const __filename = URL.fileURLToPath(import.meta.url),
-  __dirname = path.dirname(__filename),
-  migrationsDir = path.join(__dirname, "SQL Tables");
+const __filename = fileURLToPath(import.meta.url),
+  __dirname = path.dirname(__filename);
+
+const migrationsDir = path.join(__dirname, "SQL Tables");
 
 (async () => {
   try {
     await connectToDatabase();
 
+    try {
+      await pgClient.query("SELECT * FROM migrations");
+
+      info("Migrations table exists, moving to the next");
+    } catch (error) {
+      const migrationsSql = await fs.readFile(
+        path.join(migrationsDir, "000_create_migrations_table.sql"),
+        "utf-8",
+      );
+
+      await pgClient.query(migrationsSql);
+
+      info("Migrations table created");
+    }
+    console.log(pgClient);
     const sqlFiles = (await fs.readdir(migrationsDir))
       .sort()
       .filter((file) => file.endsWith(".sql"));
@@ -21,12 +37,12 @@ const __filename = URL.fileURLToPath(import.meta.url),
         path.join(migrationsDir, sqlFile),
         {
           encoding: "utf-8",
-        }
+        },
       );
 
       const tableExists = await pgClient.query(
         "SELECT * FROM migrations WHERE table_name=$1",
-        [sqlFile]
+        [sqlFile],
       );
 
       if (tableExists.rowCount && tableExists.rowCount > 0) {
@@ -48,7 +64,9 @@ const __filename = URL.fileURLToPath(import.meta.url),
   } catch (error) {
     warningMsg("Error at creating tables");
     errorMsg((error as Error).message);
+    console.log(error);
 
     await pgClient.query("ROLLBACK");
+    process.exit(1);
   }
 })();
