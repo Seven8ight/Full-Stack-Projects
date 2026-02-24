@@ -27,7 +27,6 @@ import {
   PlusCircle,
   Circle,
 } from "lucide-react";
-import styles from "./page.module.scss";
 
 const Dashboard = (): React.ReactNode => {
   const { username, todos } = useProfile(),
