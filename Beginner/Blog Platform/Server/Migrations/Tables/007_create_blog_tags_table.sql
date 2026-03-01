@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS blog_tags (
+    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
+    tag_id  UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (blog_id, tag_id)
+);

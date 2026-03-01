@@ -9,9 +9,8 @@ dotenv.config({
   path: path.join(__dirname, ".env"),
 });
 
-export const POSTGRES_USERNAME = process.env.POSTGRES_USERNAME,
-  POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD,
-  POSTGRES_DATABASE = process.env.POSTGRES_DATABASE,
+export const DATABASE_URL = process.env.DATABASE_URL,
+  REDIS_URL = process.env.REDIS_URL,
   SERVER_PORT = process.env.SERVER_PORT,
   JWT_ACCESS_TOKEN = process.env.JWT_ACCESS_TOKEN,
   JWT_REFRESH_TOKEN = process.env.JWT_REFRESH_TOKEN;

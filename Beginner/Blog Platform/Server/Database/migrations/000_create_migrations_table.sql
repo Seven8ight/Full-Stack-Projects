@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS migrations(
-    id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL,
-    executed_at TIMESTAMP DEFAULT now()
-);

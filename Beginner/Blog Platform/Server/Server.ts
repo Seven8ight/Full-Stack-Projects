@@ -1,21 +1,16 @@
 import http from "http";
-import Router from "./router.js";
 import { SERVER_PORT } from "./Config/Env.js";
-import { info, error as Error, warning } from "./src/utils/Logger.js";
-import { connectDb } from "./Config/Db.js";
+import { Info } from "./Utils/Logger.js";
 
-const Server = http.createServer(Router);
+const server = http.createServer();
 
-Server.listen(SERVER_PORT, async () => {
-  try {
-    await connectDb();
-
-    info(`Server and database are live, server live at port, ${SERVER_PORT}`);
-  } catch (error) {
-    warning(`Server live at port, ${SERVER_PORT}, database is down!`);
-    Error(`${(error as Error).message}`);
-  }
+server.listen(SERVER_PORT, () => {
+  Info(
+    `Server,Database and cache are up and running, server is at port, ${SERVER_PORT}`,
+  );
 });
 
-process.on("uncaughtException", (error) => Error(error.message));
-process.on("unhandledRejection", (error) => Error((error as Error).message));
+process.on("uncaughtException", (error) => Error(`${error.message}`, error));
+process.on("unhandledRejection", (reason) =>
+  Error(`Unhandled promise rejection: ${reason}`),
+);

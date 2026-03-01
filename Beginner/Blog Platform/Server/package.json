@@ -5,28 +5,35 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrations": "npx tsx ./Database/Migrations.ts",
-    "dev": "npx tsx --watch Server.ts"
+    "migrations": "npx tsx ./Migrations/Migrations.ts",
+    "server": "npx tsx --watch Server.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/amqplib": "^0.10.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/chalk": "^0.4.31",
     "@types/dotenv": "^6.1.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.3",
     "@types/pg": "^8.16.0",
+    "@types/redis": "^4.0.10",
+    "@types/socket.io": "^3.0.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@types/amqp": "^0.2.9",
+    "amqplib": "^0.10.9",
     "bcryptjs": "^3.0.3",
     "chalk": "^5.6.2",
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "redis": "^5.11.0",
+    "socket.io": "^4.8.3"
   }
 }
