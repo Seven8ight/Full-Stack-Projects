@@ -1,8 +1,9 @@
 import http from "http";
 import { SERVER_PORT } from "./Config/Env.js";
 import { Info } from "./Utils/Logger.js";
+import Router from "./Router.js";
 
-const server = http.createServer();
+const server = http.createServer(Router);
 
 server.listen(SERVER_PORT, () => {
   Info(

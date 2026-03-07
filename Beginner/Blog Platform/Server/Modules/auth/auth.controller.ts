@@ -13,9 +13,9 @@ import https from "https";
 import { verifyAccessToken, verifyRefreshToken } from "../../Utils/Jwt.js";
 
 export const AuthController = (
+  Database: Database,
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>,
-  Database: Database,
 ) => {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`),
     pathNames = requestUrl.pathname.split("/").filter(Boolean);
