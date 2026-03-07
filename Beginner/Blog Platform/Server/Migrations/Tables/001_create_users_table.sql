@@ -6,12 +6,15 @@ CREATE TABLE IF NOT EXISTS users (
     email           TEXT NOT NULL UNIQUE CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     password_hash   TEXT NOT NULL,
     profile_image   TEXT,
+    oauth           BOOLEAN DEFAULT FALSE,
+    oauth_provider  TEXT,
     bio             TEXT,
     preferred_topics TEXT[] DEFAULT '{}',
     is_verified     BOOLEAN DEFAULT false,
     role            user_role DEFAULT 'user',
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at      TIMESTAMP;
 );
 
 CREATE INDEX idx_users_username ON users (username);

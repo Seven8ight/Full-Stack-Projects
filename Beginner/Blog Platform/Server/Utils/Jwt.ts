@@ -1,9 +1,13 @@
 import JWT from "jsonwebtoken";
 import { JWT_ACCESS_TOKEN, JWT_REFRESH_TOKEN } from "../Config/Env.js";
 
-type Tokens = {
+export type Tokens = {
   accessToken: string;
   refreshToken: string;
+};
+
+export type Token = {
+  accessToken: string;
 };
 
 export const generateToken = (payload: Record<string, any>): Tokens => {
