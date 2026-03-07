@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS likes (
     comment_id  UUID          REFERENCES comments(id) ON DELETE CASCADE,
     type        like_type NOT NULL,
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
     PRIMARY KEY (user_id, blog_id, comment_id, type),
     CONSTRAINT exactly_one_target CHECK (
         (blog_id IS NOT NULL AND comment_id IS NULL) OR

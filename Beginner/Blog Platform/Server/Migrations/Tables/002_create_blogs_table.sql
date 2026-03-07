@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS blogs (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title           VARCHAR(200) NOT NULL CHECK (length(title) >= 1),
-    content         TEXT NOT NULL,
+    slug            VARCHAR UNIQUE,
+    content         JSONB NOT NULL,
+    cover_image_url TEXT,
     status          content_status DEFAULT 'draft',
     tags            TEXT[] DEFAULT '{}',
     media_urls      TEXT[] DEFAULT '{}',
@@ -14,7 +16,8 @@ CREATE TABLE IF NOT EXISTS blogs (
     restricted_reason TEXT,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    published_at    TIMESTAMP WITH TIME ZONE
+    published_at    TIMESTAMP WITH TIME ZONE,
+    deleted_at      TIMESTAMP
 );
 
 CREATE INDEX idx_blogs_owner    ON blogs (owner_id);

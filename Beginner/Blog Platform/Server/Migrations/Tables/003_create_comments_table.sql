@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS comments (
     like_count  INT DEFAULT 0,
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    deleted_at  TIMESTAMP,
 );
 
 CREATE INDEX idx_comments_blog     ON comments (blog_id);
