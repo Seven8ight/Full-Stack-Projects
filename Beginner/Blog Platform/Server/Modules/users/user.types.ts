@@ -7,7 +7,7 @@ export type User = {
   profile_image_url: string;
   bio: string;
   preferred_topics: string[];
-  oauth: string;
+  oauth: string | boolean;
   oauth_provider: string;
   created_at: string;
   updated_at: string;

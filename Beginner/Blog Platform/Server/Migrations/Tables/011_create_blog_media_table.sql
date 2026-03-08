@@ -1,4 +1,9 @@
-CREATE TYPE media_type AS ENUM("image","video");
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname='media_type') THEN
+        CREATE TYPE media_type AS ENUM('image','video');
+    END IF;
+END $$;
 
 CREATE TABLE blog_media(
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),

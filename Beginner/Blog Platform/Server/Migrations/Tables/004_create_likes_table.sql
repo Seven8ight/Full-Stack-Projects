@@ -1,4 +1,9 @@
-CREATE TYPE like_type AS ENUM ('like', 'dislike');
+DO $$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM pg_type WHERE typname='like_type') THEN
+        CREATE TYPE like_type AS ENUM ('like', 'dislike');
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS likes (
     user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

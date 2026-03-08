@@ -5,9 +5,10 @@ CREATE TABLE IF NOT EXISTS comments (
     content     TEXT NOT NULL,
     like_count  INT DEFAULT 0,
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    deleted_at  TIMESTAMP,
+    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at  TIMESTAMP
 );
 
-CREATE INDEX idx_comments_blog     ON comments (blog_id);
+-- Added semicolon here:
+CREATE INDEX idx_comments_blog      ON comments (blog_id); 
 CREATE INDEX idx_comments_blog_time ON comments (blog_id, created_at DESC);

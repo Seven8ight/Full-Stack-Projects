@@ -11,7 +11,7 @@ export class UserService implements Userservice {
   constructor(private userRepo: UserRepo) {}
 
   protected createPublicUser(userData: User): PublicUser {
-    const forbidden = new Set(["password", "oauth"]),
+    const forbidden = new Set(["password_hash", "oauth", "oauth_provider"]),
       filterUserData = Object.fromEntries(
         Object.entries(userData).filter(([key]) => !forbidden.has(key)),
       );

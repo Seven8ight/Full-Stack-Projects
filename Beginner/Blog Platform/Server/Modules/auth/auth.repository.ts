@@ -5,11 +5,12 @@ import { Warning } from "../../Utils/Logger.js";
 import type { User } from "../users/user.types.js";
 import type {
   AuthRepository,
+  createSessionDTO,
   loginUserDTO,
   registerUserDTO,
   Session,
 } from "./auth.types.js";
-import { compareHash } from "../../Utils/Hash.js";
+import { compareHash, passwordHash } from "../../Utils/Hash.js";
 
 export class AuthRepo implements AuthRepository {
   constructor(private dbClient: Database) {}
@@ -19,23 +20,32 @@ export class AuthRepo implements AuthRepository {
     type: "legacy" | "oauth",
     oauthProvider?: string,
   ): Promise<User> {
+    const hashPassword = passwordHash(userData.password!);
+
+    let formattedUserData: Record<string, any> = {};
+
+    for (let [key, value] of Object.entries(userData)) {
+      if (key == "password") formattedUserData["password_hash"] = hashPassword;
+      else formattedUserData[key] = value;
+    }
+
     try {
-      let keys = Object.keys(userData),
+      let keys = Object.keys(formattedUserData),
         paramIndexes: string[] = [];
 
       for (let i = 0; i < Object.keys(userData).length; i++) {
-        paramIndexes.push(`${i + 1}`);
+        paramIndexes.push(`$${i + 1}`);
       }
 
       const registerUser = await this.dbClient.transaction(
         async (client: PoolClient) =>
           await client.query(
             type == "legacy"
-              ? `INSERT INTO users(${keys.join(",")}) VALUES(${paramIndexes.join(",")})`
-              : `INSERT INTO users(${keys.join(",")},oauth,oauth_provider) VALUES(${paramIndexes.join(",")},$${paramIndexes.length},$${paramIndexes.length + 1})`,
+              ? `INSERT INTO users(${keys.join(",")}) VALUES(${paramIndexes.join(",")}) RETURNING *`
+              : `INSERT INTO users(${keys.join(",")},oauth,oauth_provider) VALUES(${paramIndexes.join(",")},$${paramIndexes.length + 1},$${paramIndexes.length + 2}) RETURNING *`,
             type == "legacy"
-              ? [Object.values(userData)]
-              : [Object.values(userData), true, oauthProvider],
+              ? [...Object.values(formattedUserData)]
+              : [...Object.values(formattedUserData), true, oauthProvider],
           ),
       );
 
@@ -51,28 +61,29 @@ export class AuthRepo implements AuthRepository {
     type: "legacy" | "oauth",
   ): Promise<User> {
     try {
-      const loginUser: QueryResult<User> = await this.dbClient.query(
-        "SELECT * FROM users WHERE email=$1 or username=$2",
-        [userCredentials.email, userCredentials.username],
-      );
+      const loginUser: QueryResult<User & { password_hash: string }> =
+        await this.dbClient.query(
+          "SELECT * FROM users WHERE email=$1 or username=$2",
+          [userCredentials.email, userCredentials.username],
+        );
 
       if (loginUser.rowCount && loginUser.rowCount <= 0)
         throw new Error("User does not exist");
 
-      const userBody: User = loginUser.rows[0]!;
+      const userBody = loginUser.rows[0]!;
 
       if (type == "legacy") {
         if (
-          userBody.oauth.toLowerCase() == "true" ||
-          userBody.oauth.toLowerCase().includes("t")
+          userBody.oauth == true ||
+          userBody.oauth.toString().toLowerCase().includes("t")
         )
           throw new Error(
             `User is registered using oauth, try oauth authentication by ${userBody.oauth_provider}`,
           );
 
         let passwordValidation: boolean = compareHash(
-          userCredentials.password!,
-          userBody.password,
+          `${userCredentials.password!}`,
+          userBody.password_hash,
         );
 
         if (passwordValidation) return userBody;
@@ -80,6 +91,60 @@ export class AuthRepo implements AuthRepository {
       } else return userBody;
     } catch (error) {
       Warning("Error occurred at auth repo login user");
+      throw error;
+    }
+  }
+
+  async createSession(sessionData: createSessionDTO): Promise<void> {
+    try {
+      const refreshTokenHash = passwordHash(sessionData.refreshToken);
+
+      let newSession: Record<string, any> = {};
+
+      let allowedFields = [
+        "user_id",
+        "refresh_token_hash",
+        "ip_address",
+        "user_agent",
+      ];
+
+      for (let [key, value] of Object.entries(sessionData)) {
+        if (allowedFields.includes(key)) newSession[key] = value;
+      }
+
+      newSession.refresh_token_hash = refreshTokenHash;
+
+      let paramIndexes: string[] = [];
+
+      for (
+        let index: number = 1;
+        index <= Object.keys(newSession).length;
+        index++
+      ) {
+        paramIndexes.push(`$${index}`);
+      }
+
+      await this.dbClient.transaction(
+        async (client: PoolClient) =>
+          await client.query(
+            `INSERT INTO sessions(${Object.keys(newSession).join(",")}) VALUES(${paramIndexes.join(",")})`,
+            [...Object.values(newSession)],
+          ),
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async retrieveSessions(userId: string): Promise<Session | Session[]> {
+    try {
+      const userSessions: QueryResult<Session> = await this.dbClient.query(
+        "SELECT * FROM sessions where user_id=$1",
+        [userId],
+      );
+
+      return userSessions.rows;
+    } catch (error) {
       throw error;
     }
   }

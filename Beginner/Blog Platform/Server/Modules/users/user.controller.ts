@@ -5,17 +5,6 @@ import type { Database } from "../../Config/Database.js";
 import { verifyAccessToken } from "../../Utils/Jwt.js";
 import type { PublicUser } from "./user.types.js";
 
-const ResponseMessage = (type: "error" | "message", message: string | Object) =>
-  JSON.stringify(
-    type == "error"
-      ? {
-          error: message,
-        }
-      : {
-          message,
-        },
-  );
-
 export const UserController = async (
   Database: Database,
   request: IncomingMessage,
@@ -25,7 +14,7 @@ export const UserController = async (
 
   if (!authorization) {
     response.writeHead(401);
-    response.end(ResponseMessage("error", "Authorization token not provided"));
+    response.end(JSON.stringify({ error: "Authorization token not provided" }));
     return;
   }
 
@@ -41,7 +30,7 @@ export const UserController = async (
         const user = await userService.getUser(userId);
 
         response.writeHead(200);
-        response.end(ResponseMessage("message", JSON.stringify(user)));
+        response.end(JSON.stringify(user));
         break;
       case "PATCH":
         let unparsedRequestBody: string = "";
@@ -59,31 +48,26 @@ export const UserController = async (
           );
 
           response.writeHead(200);
-          response.end(ResponseMessage("message", JSON.stringify(userUpdate)));
+          response.end(JSON.stringify(userUpdate));
         });
 
         break;
       case "DELETE":
-        const deletion = await userService.deleteUser(userId);
+        await userService.deleteUser(userId);
 
         response.writeHead(204);
-        response.end(
-          ResponseMessage("message", JSON.stringify("Deleted successfully")),
-        );
+        response.end(JSON.stringify("Delete user"));
         break;
       default:
         response.writeHead(404);
-        response.end(
-          ResponseMessage(
-            "error",
-            "Invalid http method. Use only GET,PATCH and DELETE",
-          ),
-        );
+        response.end(JSON.stringify({ error: "Invalid http Method" }));
 
         break;
     }
   } catch (error) {
     response.writeHead(400);
-    response.end(ResponseMessage("error", (error as Error).message));
+    response.end({
+      error: (error as Error).message,
+    });
   }
 };

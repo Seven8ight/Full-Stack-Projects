@@ -1,4 +1,9 @@
-CREATE TYPE content_status AS ENUM ('draft', 'published', 'restricted');
+DO $$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM pg_type WHERE typname='content_status') THEN
+        CREATE TYPE content_status AS ENUM ('draft', 'published', 'restricted');
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS blogs (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),

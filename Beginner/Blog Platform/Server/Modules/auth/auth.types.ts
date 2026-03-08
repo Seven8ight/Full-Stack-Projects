@@ -1,16 +1,6 @@
 import type { Token, Tokens } from "../../Utils/Jwt.js";
 import type { User } from "../users/user.types.js";
 
-export type registerUserDTO = Pick<
-  User,
-  "username" | "email" | "profile_image_url"
-> &
-  Partial<User>;
-
-export type loginUserDTO = Pick<User, "username" | "email"> & Partial<User>;
-
-export type userType = "legacy" | "oauth";
-
 export type Session = {
   id: string;
   user_id: string;
@@ -22,6 +12,23 @@ export type Session = {
   revoked_at: string;
 };
 
+export type createSessionDTO = Omit<
+  Session,
+  "expires_at" | "created_at" | "revoked_at" | "id" | "refresh_token_hash"
+> & { refreshToken: string };
+
+export type registerUserDTO = Pick<
+  User,
+  "username" | "email" | "profile_image_url"
+> &
+  Partial<User> &
+  createSessionDTO;
+
+export type loginUserDTO = (Pick<User, "username" | "email"> & Partial<User>) &
+  createSessionDTO;
+
+export type userType = "legacy" | "oauth";
+
 export interface AuthRepository {
   registerUser: (
     userData: registerUserDTO,
@@ -31,6 +38,8 @@ export interface AuthRepository {
     userCredentials: loginUserDTO,
     type: "legacy" | "oauth",
   ) => Promise<User>;
+  createSession: (session: createSessionDTO) => Promise<void>;
+  retrieveSessions: (userId: string) => Promise<Session | Session[]>;
   refreshAuthToken: (userId: string, refreshToken: string) => Promise<Token>;
   logOut: (userId: string, refreshToken: string) => Promise<void>;
   logOutAllDevices: (userId: string) => Promise<void>;

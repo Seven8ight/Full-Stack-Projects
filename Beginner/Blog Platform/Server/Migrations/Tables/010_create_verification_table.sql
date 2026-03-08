@@ -1,4 +1,9 @@
-CREATE TYPE verification_type AS ENUM("email_verification","password_reset");
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'verification_type') THEN
+        CREATE TYPE verification_type AS ENUM ('email_verification', 'password_reset');
+    END IF;
+END $$;
 
 CREATE TABLE verification(
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -8,5 +13,4 @@ CREATE TABLE verification(
     expires_at             TIMESTAMP,
     created_at             TIMESTAMP DEFAULT NOW(),
     revoked_at             TIMESTAMP
-
 );
