@@ -229,4 +229,17 @@ export class AuthRepo implements AuthRepository {
       throw error;
     }
   }
+
+  async verifyUser(userId: string, status: boolean): Promise<void> {
+    try {
+      await this.dbClient.transaction(async (client: PoolClient) => {
+        return await client.query(
+          "UPDATE users SET is_verified=$2 WHERE user_id=$1",
+          [userId, status],
+        );
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

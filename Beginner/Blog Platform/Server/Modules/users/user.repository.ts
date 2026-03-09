@@ -13,15 +13,35 @@ export class UserRepo implements UserRepository {
         paramIndex = 2;
 
       for (let [key, value] of Object.entries(newUserData)) {
-        keys.push(`${key}=${paramIndex++}`);
-        values.push(value);
+        if (key !== "topics") {
+          keys.push(`${key}=$${paramIndex++}`);
+          values.push(value);
+        } else {
+          const topics = newUserData.topics?.topics ?? [];
+
+          if (newUserData.topics?.action === "add") {
+            keys.push(
+              `preferred_topics = preferred_topics || $${paramIndex++}::text[]`,
+            );
+            values.push(topics);
+          } else if (newUserData.topics?.action === "remove") {
+            keys.push(`
+              preferred_topics = ARRAY(
+                SELECT unnest(preferred_topics)
+                EXCEPT
+                SELECT unnest($${paramIndex++}::text[])
+              )
+            `);
+            values.push(topics);
+          }
+        }
       }
 
       const editUser = await this.dbClient.transaction(
         async (client: PoolClient) => {
           return await client.query(
             `UPDATE users SET ${keys.join(",")} WHERE id=$1 RETURNING *`,
-            [userId, values.join(",")],
+            [userId, ...values],
           );
         },
       );

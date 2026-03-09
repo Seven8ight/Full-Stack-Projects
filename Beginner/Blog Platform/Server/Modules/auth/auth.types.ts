@@ -41,6 +41,7 @@ export interface AuthRepository {
   createSession: (session: createSessionDTO) => Promise<void>;
   retrieveSessions: (userId: string) => Promise<Session | Session[]>;
   refreshAuthToken: (userId: string, refreshToken: string) => Promise<Token>;
+  verifyUser: (userId: string, status: boolean) => Promise<void>;
   logOut: (userId: string, refreshToken: string) => Promise<void>;
   logOutAllDevices: (userId: string) => Promise<void>;
 }
@@ -56,6 +57,7 @@ export interface AuthServ {
     type: "legacy" | "oauth",
   ) => Promise<Tokens>;
   refreshAuthToken: (userId: string, refreshToken: string) => Promise<Token>;
+  verifyUser: (userId: string, status: boolean) => Promise<void>;
   logOut: (userId: string, refreshToken: string) => Promise<void>;
   logOutAllDevices: (userId: string) => Promise<void>;
 }

@@ -1,4 +1,3 @@
-import { passwordHash } from "../../Utils/Hash.js";
 import { generateToken, type Token, type Tokens } from "../../Utils/Jwt.js";
 import { Warning } from "../../Utils/Logger.js";
 import type { PublicUser, User } from "../users/user.types.js";
@@ -148,6 +147,18 @@ export class AuthService implements AuthServ {
 
       return userSessions;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async verifyUser(userId: string, status: boolean): Promise<void> {
+    if (!userId || !status)
+      throw new Error("User id and status must be provided");
+
+    try {
+      await this.authRepo.verifyUser(userId, status);
+    } catch (error) {
+      Warning("Error at verification step service");
       throw error;
     }
   }

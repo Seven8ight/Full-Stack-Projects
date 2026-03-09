@@ -16,9 +16,17 @@ export type User = {
 
 export type PublicUser = Omit<User, "password" | "oauth" | "oauthProvider">;
 
-export type updateUserDTO =
-  | Omit<User, "id" | "created_at" | "updated_at">
-  | Partial<User>;
+export type updateUserDTO = Partial<{
+  username: string;
+  email: string;
+  password: string;
+  bio: string;
+  topics: {
+    action: "add" | "remove";
+    topics: string[];
+  };
+  deleted_at: string;
+}>;
 
 export interface UserRepository {
   editUser: (userId: string, newUserData: updateUserDTO) => Promise<User>;

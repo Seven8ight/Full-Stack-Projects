@@ -11,6 +11,7 @@ import {
 import type { loginUserDTO, registerUserDTO } from "./auth.types.js";
 import https from "https";
 import { verifyAccessToken, verifyRefreshToken } from "../../Utils/Jwt.js";
+import type { PublicUser } from "../users/user.types.js";
 
 // Helper to handle the https request as a Promise to avoid callback hell
 const fetchGoogleTokens = (code: string, redirectUri: string): Promise<any> => {
@@ -61,7 +62,6 @@ export const AuthController = (
   const authRepo = new AuthRepo(Database),
     authService = new AuthService(authRepo);
 
-  // Extract Session Metadata
   const sessionMetadata = {
     ip_address: request.socket.remoteAddress || "127.0.0.1",
     user_agent: request.headers["user-agent"] || "unknown",
@@ -261,8 +261,10 @@ export const AuthController = (
             (tokenVerifier as any).id,
             parsedRequestBody.refreshToken,
           );
-          response.writeHead(200);
-          response.end(JSON.stringify(refresh));
+          response.writeHead(200, {
+            "set-cookie": `accesstoken=${JSON.stringify(refresh.accessToken)}; HttpOnly; SameSite=Lax; Path=/`,
+          });
+          response.end();
           break;
         }
 
@@ -294,6 +296,27 @@ export const AuthController = (
           response.writeHead(200);
           response.end(JSON.stringify(userSessions));
           break;
+
+        case "verify": {
+          const { authorization } = request.headers;
+          if (!authorization) {
+            response.writeHead(401);
+            response.end(
+              JSON.stringify({
+                error: "Authenticate yourself first",
+              }),
+            );
+            return;
+          }
+
+          const userObject = verifyAccessToken(authorization),
+            userId = (userObject as PublicUser).id;
+
+          await authService.verifyUser(userId, true);
+
+          response.writeHead(200);
+          response.end(JSON.stringify({ message: "Verified" }));
+        }
 
         default:
           response.writeHead(404);

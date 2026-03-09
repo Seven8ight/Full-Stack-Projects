@@ -32,6 +32,7 @@ export class UserService implements Userservice {
       "profile_image_url",
       "bio",
       "preferred_topics",
+      "topics",
     ];
 
     let filteredUserData: Record<string, any> = {};

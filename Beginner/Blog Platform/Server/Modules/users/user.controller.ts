@@ -18,8 +18,21 @@ export const UserController = async (
     return;
   }
 
-  const userObject = verifyAccessToken(authorization),
+  let userId: string;
+
+  try {
+    const userObject = verifyAccessToken(authorization);
     userId = (userObject as PublicUser).id;
+  } catch (error) {
+    response.writeHead(401);
+    response.end(
+      JSON.stringify({
+        error: `${(error as Error).message}`,
+      }),
+    );
+    console.log(error);
+    return;
+  }
 
   const userRepo = new UserRepo(Database),
     userService = new UserService(userRepo);
@@ -40,15 +53,24 @@ export const UserController = async (
         });
 
         request.on("end", async () => {
-          const parsedRequestBody = JSON.parse(unparsedRequestBody || "{}");
+          try {
+            const parsedRequestBody = JSON.parse(unparsedRequestBody || "{}");
 
-          const userUpdate = await userService.editUser(
-            userId,
-            parsedRequestBody,
-          );
+            const userUpdate = await userService.editUser(
+              userId,
+              parsedRequestBody,
+            );
 
-          response.writeHead(200);
-          response.end(JSON.stringify(userUpdate));
+            response.writeHead(200);
+            response.end(JSON.stringify(userUpdate));
+          } catch (error) {
+            response.writeHead(400);
+            response.end(
+              JSON.stringify({
+                error: `${(error as Error).message}`,
+              }),
+            );
+          }
         });
 
         break;
@@ -66,8 +88,10 @@ export const UserController = async (
     }
   } catch (error) {
     response.writeHead(400);
-    response.end({
-      error: (error as Error).message,
-    });
+    response.end(
+      JSON.stringify({
+        error: (error as Error).message,
+      }),
+    );
   }
 };
