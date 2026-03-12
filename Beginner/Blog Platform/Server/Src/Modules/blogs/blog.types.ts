@@ -42,7 +42,8 @@ export type updateBlogDTO = (Pick<createBlogDTO, "owner_id"> &
       tags: string[];
     };
     deleted_at: string;
-  }>;
+  }> &
+  Pick<Blog, "id">;
 
 export interface BlogRepository {
   createBlog: (blogData: createBlogDTO) => Promise<Blog>;
@@ -54,8 +55,8 @@ export interface BlogRepository {
 }
 
 export interface BlogService {
-  createBlog: (blogData: createBlogDTO) => Promise<Blog>;
-  editBlog: (blogId: string, newBlogData: updateBlogDTO) => Promise<Blog>;
+  createBlog: (userId: string, blogData: createBlogDTO) => Promise<Blog>;
+  editBlog: (newBlogData: updateBlogDTO) => Promise<Blog>;
   getBlogById: (blogId: string) => Promise<Blog>;
   getUserBlogs: (userId: string) => Promise<Blog[]>;
   deleteBlog: (blogId: string, userId: string) => Promise<void>;

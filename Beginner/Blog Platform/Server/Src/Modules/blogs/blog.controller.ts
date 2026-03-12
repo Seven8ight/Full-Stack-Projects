@@ -12,7 +12,6 @@ export const BlogController = (
   response: ServerResponse<IncomingMessage>,
 ) => {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`);
-  const user = verifyUser(request, response) as PublicUser;
 
   let unParsedReqBody: string = "";
 
@@ -25,6 +24,8 @@ export const BlogController = (
       blogService: BlogServ = new BlogServ(blogRepo);
 
     try {
+      const user = verifyUser(request, response) as PublicUser;
+
       switch (request.method) {
         case "GET":
           const searchParams = requestUrl.searchParams,
@@ -57,7 +58,10 @@ export const BlogController = (
 
           break;
         case "POST":
-          const createBlog = await blogService.createBlog(parsedReqBody);
+          const createBlog = await blogService.createBlog(
+            user.id,
+            parsedReqBody,
+          );
 
           response.writeHead(201, {
             "content-type": "application/json",
@@ -66,7 +70,7 @@ export const BlogController = (
 
           break;
         case "PATCH":
-          const editBlog = await blogService.createBlog(parsedReqBody);
+          const editBlog = await blogService.editBlog(parsedReqBody);
 
           response.writeHead(201, {
             "content-type": "application/json",

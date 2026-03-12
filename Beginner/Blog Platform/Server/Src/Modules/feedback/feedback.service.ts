@@ -18,8 +18,8 @@ export class FeedbackServ implements FeedbackService {
     ];
 
     for (let [key, value] of Object.entries(data)) {
-      if (!(key in allowedFields)) return false;
-      if (!value || value == undefined) return false;
+      if (!allowedFields.includes(key)) return false;
+      if (!value) return false;
     }
 
     return true;

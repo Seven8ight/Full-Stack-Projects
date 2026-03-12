@@ -9,7 +9,10 @@ export type Comment = {
   deleted_at: string;
 };
 
-export type createCommentDTO = Pick<Comment, "user_id" | "blog_id" | "content">;
+export type createCommentDTO = Pick<
+  Comment,
+  "user_id" | "blog_id" | "content" | "like_count"
+>;
 export type updateCommentDTO = Pick<Comment, "id" | "user_id"> &
   Omit<Comment, "created_at" | "deleted_at" | "updated_at"> &
   Partial<Comment>;

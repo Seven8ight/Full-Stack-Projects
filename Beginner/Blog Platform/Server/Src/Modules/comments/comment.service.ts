@@ -13,15 +13,31 @@ export class CommentServ implements CommentService {
     "user_id",
     "blog_id",
     "content",
+    "like_count",
   ];
 
-  private commentFieldChecker(data: any): data is createCommentDTO {
-    if (!data || typeof data != "object") return false;
+  private isValidCreateComment(data: any): data is createCommentDTO {
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      return false;
+    }
 
-    for (let key of Object.keys(data)) {
-      if (!(key in this.allowedFields)) return false;
+    const presentKeys = new Set(Object.keys(data));
 
-      if (!data.key) return false;
+    for (const field of this.allowedFields) {
+      if (!presentKeys.has(field) || data[field] == null) {
+        return false;
+      }
+
+      const value = data[field];
+      if (typeof value === "string" && value.trim() === "") {
+        return false;
+      }
+    }
+
+    for (const key of presentKeys) {
+      if (!this.allowedFields.includes(key as any)) {
+        return false;
+      }
     }
 
     return true;
@@ -37,16 +53,16 @@ export class CommentServ implements CommentService {
       let newCommentData: Record<string, any> = {};
 
       for (let [key, value] of Object.entries(commentData)) {
-        if (!(key in this.allowedFields)) continue;
+        if (key in this.allowedFields) continue;
         if (!value) throw new Error(`${key} has no defined value`);
 
         newCommentData[key] = value;
       }
 
       newCommentData.user_id = userId;
-      let commentChecker = this.commentFieldChecker(newCommentData);
+      let commentChecker = this.isValidCreateComment(newCommentData);
 
-      if (!commentChecker)
+      if (commentChecker == false)
         throw new Error(
           "Invalid comment body, ensure all fields are present and with defined values",
         );
@@ -71,7 +87,7 @@ export class CommentServ implements CommentService {
       let newCommentData: Record<string, any> = {};
 
       for (let [key, value] of Object.entries(commentData)) {
-        if (!(key.toLowerCase() in this.allowedFields)) continue;
+        if (key.toLowerCase() in this.allowedFields) continue;
 
         if (!value || (typeof value == "string" && value.trim().length <= 0))
           throw new Error(`${key} has a empty/undefined value`);

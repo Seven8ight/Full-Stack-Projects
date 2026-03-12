@@ -33,8 +33,12 @@ export class BlogServ implements BlogService {
     return true;
   }
 
-  async createBlog(blogData: createBlogDTO): Promise<Blog> {
+  async createBlog(userId: string, blogData: createBlogDTO): Promise<Blog> {
+    if (!userId) throw new Error("User id must be provided");
+
     try {
+      blogData.owner_id = userId;
+
       let blogDataChecker = this.blogDataHasFields(blogData);
       if (!blogDataChecker) {
         throw new Error(
@@ -51,19 +55,34 @@ export class BlogServ implements BlogService {
     }
   }
 
-  async editBlog(blogId: string, newBlogData: updateBlogDTO): Promise<Blog> {
-    if (!blogId) throw new Error("Blog id must be provided");
+  async editBlog(newBlogData: updateBlogDTO): Promise<Blog> {
+    if (!newBlogData.id) throw new Error("Blog id must be provided");
+
+    const allowedFields: string[] = [
+      "title",
+      "slug",
+      "content",
+      "cover_image_url",
+      "status",
+      "tags",
+      "media_urls",
+      "view_count",
+      "like_count",
+    ];
 
     try {
       for (let [key, value] of Object.entries(newBlogData)) {
-        if (!(key.toLowerCase() in this.allowedFields))
+        if (allowedFields.includes(key) == false && key != "id")
           throw new Error(`Invalid field, ${key}`);
 
         if (!value || (typeof value == "string" && value.trim().length <= 0))
           throw new Error(`${key} has a empty/undefined value`);
       }
 
-      const editQuery = await this.blogRepo.editBlog(blogId, newBlogData);
+      const editQuery = await this.blogRepo.editBlog(
+        newBlogData.id,
+        newBlogData,
+      );
 
       return editQuery;
     } catch (error) {

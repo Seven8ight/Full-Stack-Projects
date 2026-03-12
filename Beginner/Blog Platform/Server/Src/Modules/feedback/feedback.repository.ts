@@ -20,7 +20,7 @@ export class FeedbackRepo implements FeedbackRepository {
       for (let [key, value] of Object.entries(feedbackData)) {
         keys.push(key);
         paramIndexing.push(`$${paramIndex++}`);
-        values.join(value);
+        values.push(value);
       }
 
       const newFeedback: QueryResult<Feedback> =
@@ -44,14 +44,16 @@ export class FeedbackRepo implements FeedbackRepository {
         paramIndex: number = 3;
 
       for (let [key, value] of Object.entries(feedbackData)) {
-        keys.push(`${key}=$${paramIndex++}`);
-        values.push(value);
+        if (key != "user_id" && key != "blog_id") {
+          keys.push(`${key}=$${paramIndex++}`);
+          values.push(value);
+        }
       }
 
       const patchFeedback = await this.dbClient.transaction(
         async (client: PoolClient) => {
-          return client.query(
-            `UPDATE comments SET ${keys.join(",")} WHERE id=$1 and user_id=$2 RETURNING *`,
+          return await client.query(
+            `UPDATE feedback SET ${keys.join(",")} WHERE id=$1 and user_id=$2 RETURNING *`,
             [feedbackData.id, feedbackData.user_id, ...values],
           );
         },

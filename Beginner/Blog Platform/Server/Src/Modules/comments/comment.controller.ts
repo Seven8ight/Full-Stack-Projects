@@ -12,7 +12,6 @@ export const CommentController = (
   response: ServerResponse<IncomingMessage>,
 ) => {
   const requestUrl = new URL(request.url!, `http://${request.headers.host}`);
-  const user = verifyUser(request, response) as PublicUser;
 
   let unparsedReqBody: string = "";
 
@@ -27,6 +26,8 @@ export const CommentController = (
       commentService: CommentService = new CommentServ(commentRepo);
 
     try {
+      const user = verifyUser(request, response) as PublicUser;
+
       switch (request.method) {
         case "GET":
           const blogComments = commentService.getBlogComments(
@@ -40,19 +41,19 @@ export const CommentController = (
 
           break;
         case "POST":
-          const newComment = commentService.createComment(
+          const newComment = await commentService.createComment(
             user.id,
             parsedReqBody,
           );
 
-          response.writeHead(200, {
+          response.writeHead(201, {
             "content-type": "application/json",
           });
           response.end(JSON.stringify(newComment));
 
           break;
         case "PATCH":
-          const patchedComment = commentService.editComment(
+          const patchedComment = await commentService.editComment(
             user.id,
             parsedReqBody,
           );
@@ -97,6 +98,13 @@ export const CommentController = (
 
           break;
       }
-    } catch (error) {}
+    } catch (error) {
+      response.writeHead(400);
+      response.end(
+        JSON.stringify({
+          error: (error as Error).message,
+        }),
+      );
+    }
   });
 };

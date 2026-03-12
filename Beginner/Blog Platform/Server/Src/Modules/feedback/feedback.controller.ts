@@ -10,8 +10,6 @@ export const FeedbackController = (
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>,
 ) => {
-  const user = verifyUser(request, response) as PublicUser;
-
   let unparsedReqBody: string = "";
 
   request.on("data", (data: Buffer) => (unparsedReqBody += data.toString()));
@@ -22,57 +20,69 @@ export const FeedbackController = (
     const feedbackRepo = new FeedbackRepo(database),
       feedbackServ = new FeedbackServ(feedbackRepo);
 
-    switch (request.method) {
-      case "GET":
-        const retrieveComment = await feedbackServ.createFeedback(
-          user.id,
-          parsedReqBody,
-        );
+    try {
+      const user = verifyUser(request, response) as PublicUser;
 
-        response.writeHead(200, {
-          "content-type": "application/json",
-        });
-        response.end(JSON.stringify(retrieveComment));
+      switch (request.method) {
+        case "GET":
+          const retrieveComment = await feedbackServ.getFeedbackByUserId(
+            user.id,
+          );
 
-        break;
-      case "POST":
-        const newComment = await feedbackServ.createFeedback(
-          user.id,
-          parsedReqBody,
-        );
+          response.writeHead(200, {
+            "content-type": "application/json",
+          });
+          response.end(JSON.stringify(retrieveComment));
 
-        response.writeHead(201, {
-          "content-type": "application/json",
-        });
-        response.end(JSON.stringify(newComment));
+          break;
+        case "POST":
+          const newComment = await feedbackServ.createFeedback(
+            user.id,
+            parsedReqBody,
+          );
 
-        break;
-      case "PATCH":
-        const patchedComment = await feedbackServ.editFeedback(
-          user.id,
-          parsedReqBody,
-        );
+          response.writeHead(201, {
+            "content-type": "application/json",
+          });
+          response.end(JSON.stringify(newComment));
 
-        response.writeHead(200, {
-          "content-type": "application/json",
-        });
-        response.end(JSON.stringify(patchedComment));
+          break;
+        case "PATCH":
+          const patchedComment = await feedbackServ.editFeedback(
+            user.id,
+            parsedReqBody,
+          );
 
-        break;
-      case "DELETE":
-        await feedbackServ.deleteFeedback(parsedReqBody.id);
+          response.writeHead(200, {
+            "content-type": "application/json",
+          });
+          response.end(JSON.stringify(patchedComment));
 
-        response.writeHead(204);
-        response.end();
+          break;
+        case "DELETE":
+          await feedbackServ.deleteFeedback(parsedReqBody.id);
 
-        break;
-      default:
-        response.writeHead(404, {
-          "content-type": "application/json",
-        });
-        response.end(JSON.stringify({ error: "Unknown API route" }));
+          response.writeHead(204);
+          response.end();
 
-        break;
+          break;
+        default:
+          response.writeHead(404, {
+            "content-type": "application/json",
+          });
+          response.end(JSON.stringify({ error: "Unknown API route" }));
+
+          break;
+      }
+    } catch (error) {
+      response.writeHead(400, {
+        "content-type": "application/json",
+      });
+      response.end(
+        JSON.stringify({
+          error: (error as Error).message,
+        }),
+      );
     }
   });
 };

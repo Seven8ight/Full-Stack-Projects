@@ -12,7 +12,7 @@ export class BlogRepo implements BlogRepository {
 
   async createBlog(blogData: createBlogDTO): Promise<Blog> {
     try {
-      let keys: string[] = [],
+      let keys: string[] = Object.keys(blogData),
         values = Object.values(blogData),
         paramIndex = 1,
         paramIndexMapping: string[] = Array.from(
@@ -127,6 +127,7 @@ export class BlogRepo implements BlogRepository {
       const date = new Date();
 
       await this.editBlog(blogId, {
+        id: blogId,
         owner_id: userId,
         deleted_at: date.toUTCString(),
       });

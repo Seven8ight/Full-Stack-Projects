@@ -13,7 +13,7 @@ export class CommentRepository implements CommentRepo {
 
   async createComment(commentData: createCommentDTO): Promise<Comment> {
     try {
-      let keys: string[] = [],
+      let keys: string[] = Object.keys(commentData),
         values = Object.values(commentData),
         paramIndex = 1,
         paramIndexMapping: string[] = Array.from(
@@ -24,7 +24,7 @@ export class CommentRepository implements CommentRepo {
       const commentCreation: QueryResult<Comment> =
         await this.dbClient.transaction(async (client: PoolClient) => {
           return await client.query(
-            `INSERT INTO blogs(${keys.join(",")}) VALUES(${paramIndexMapping.join(",")}) RETURNING *`,
+            `INSERT INTO comments(${keys.join(",")}) VALUES(${paramIndexMapping.join(",")}) RETURNING *`,
             [...values],
           );
         });
@@ -46,8 +46,10 @@ export class CommentRepository implements CommentRepo {
         paramIndex: number = 3;
 
       for (let [key, value] of Object.entries(commentData)) {
-        keys.push(`${key}=$${paramIndex++}`);
-        values.push(value);
+        if (key != "user_id" && key != "id") {
+          keys.push(`${key}=$${paramIndex++}`);
+          values.push(value);
+        }
       }
 
       const patchComment = await this.dbClient.transaction(
