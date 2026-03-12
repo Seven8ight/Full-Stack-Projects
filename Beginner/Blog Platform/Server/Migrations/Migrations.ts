@@ -1,5 +1,5 @@
 import path from "path";
-import { dbClient } from "../Config/Database.js";
+import { dbClient } from "../Src/Config/Database.js";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import { Error, Info } from "../Utils/Logger.js";

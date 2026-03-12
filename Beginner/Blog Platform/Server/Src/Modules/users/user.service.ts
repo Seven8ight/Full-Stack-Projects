@@ -1,4 +1,4 @@
-import { Warning } from "../../Utils/Logger.js";
+import { Warning } from "../../../Utils/Logger.js";
 import type { UserRepo } from "./user.repository.js";
 import type {
   PublicUser,

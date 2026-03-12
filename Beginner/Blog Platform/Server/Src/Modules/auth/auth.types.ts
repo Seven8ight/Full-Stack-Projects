@@ -1,4 +1,4 @@
-import type { Token, Tokens } from "../../Utils/Jwt.js";
+import type { Token, Tokens } from "../../../Utils/Jwt.js";
 import type { User } from "../users/user.types.js";
 
 export type Session = {

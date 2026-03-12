@@ -1,5 +1,5 @@
 import JWT from "jsonwebtoken";
-import { JWT_ACCESS_TOKEN, JWT_REFRESH_TOKEN } from "../Config/Env.js";
+import { JWT_ACCESS_TOKEN, JWT_REFRESH_TOKEN } from "../Src/Config/Env.js";
 
 export type Tokens = {
   accessToken: string;

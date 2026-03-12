@@ -2,37 +2,15 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { UserRepo } from "./user.repository.js";
 import { UserService } from "./user.service.js";
 import type { Database } from "../../Config/Database.js";
-import { verifyAccessToken } from "../../Utils/Jwt.js";
 import type { PublicUser } from "./user.types.js";
+import { verifyUser } from "../../Middleware/Authentication.js";
 
 export const UserController = async (
   Database: Database,
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>,
 ) => {
-  const { authorization } = request.headers;
-
-  if (!authorization) {
-    response.writeHead(401);
-    response.end(JSON.stringify({ error: "Authorization token not provided" }));
-    return;
-  }
-
-  let userId: string;
-
-  try {
-    const userObject = verifyAccessToken(authorization);
-    userId = (userObject as PublicUser).id;
-  } catch (error) {
-    response.writeHead(401);
-    response.end(
-      JSON.stringify({
-        error: `${(error as Error).message}`,
-      }),
-    );
-    console.log(error);
-    return;
-  }
+  const user = verifyUser(request, response) as PublicUser;
 
   const userRepo = new UserRepo(Database),
     userService = new UserService(userRepo);
@@ -40,10 +18,11 @@ export const UserController = async (
   try {
     switch (request.method) {
       case "GET":
-        const user = await userService.getUser(userId);
+        const userObject = await userService.getUser(user.id);
 
         response.writeHead(200);
-        response.end(JSON.stringify(user));
+        response.end(JSON.stringify(userObject));
+
         break;
       case "PATCH":
         let unparsedRequestBody: string = "";
@@ -57,7 +36,7 @@ export const UserController = async (
             const parsedRequestBody = JSON.parse(unparsedRequestBody || "{}");
 
             const userUpdate = await userService.editUser(
-              userId,
+              user.id,
               parsedRequestBody,
             );
 
@@ -75,10 +54,11 @@ export const UserController = async (
 
         break;
       case "DELETE":
-        await userService.deleteUser(userId);
+        await userService.deleteUser(user.id);
 
         response.writeHead(204);
-        response.end(JSON.stringify("Delete user"));
+        response.end();
+
         break;
       default:
         response.writeHead(404);

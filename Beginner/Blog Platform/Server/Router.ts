@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { RouteControllers } from "./Routes.js";
-import { Database, pgPool } from "./Config/Database.js";
+import { Database, pgPool } from "./Src/Config/Database.js";
 
 export default function Router(
   request: IncomingMessage,

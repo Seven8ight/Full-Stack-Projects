@@ -1,7 +1,7 @@
-import type { PoolClient, QueryResult } from "pg";
+import type { PoolClient } from "pg";
 import type { Database } from "../../Config/Database.js";
 import type { User, updateUserDTO, UserRepository } from "./user.types.js";
-import { Warning } from "../../Utils/Logger.js";
+import { Warning } from "../../../Utils/Logger.js";
 
 export class UserRepo implements UserRepository {
   constructor(private dbClient: Database) {}

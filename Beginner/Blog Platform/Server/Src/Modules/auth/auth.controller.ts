@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import type { ClientRequest, IncomingMessage, ServerResponse } from "node:http";
 import { AuthRepo } from "./auth.repository.js";
 import { Database } from "../../Config/Database.js";
 import { AuthService } from "./auth.service.js";
@@ -10,10 +10,9 @@ import {
 } from "../../Config/Env.js";
 import type { loginUserDTO, registerUserDTO } from "./auth.types.js";
 import https from "https";
-import { verifyAccessToken, verifyRefreshToken } from "../../Utils/Jwt.js";
+import { verifyAccessToken, verifyRefreshToken } from "../../../Utils/Jwt.js";
 import type { PublicUser } from "../users/user.types.js";
 
-// Helper to handle the https request as a Promise to avoid callback hell
 const fetchGoogleTokens = (code: string, redirectUri: string): Promise<any> => {
   const postData = new URLSearchParams({
     code,
@@ -24,7 +23,7 @@ const fetchGoogleTokens = (code: string, redirectUri: string): Promise<any> => {
   }).toString();
 
   return new Promise((resolve, reject) => {
-    const req = https.request(
+    const request: ClientRequest = https.request(
       "https://oauth2.googleapis.com/token",
       {
         method: "POST",
@@ -33,10 +32,10 @@ const fetchGoogleTokens = (code: string, redirectUri: string): Promise<any> => {
           "Content-Length": Buffer.byteLength(postData),
         },
       },
-      (res) => {
+      (response: IncomingMessage) => {
         let body = "";
-        res.on("data", (d) => (body += d));
-        res.on("end", () => {
+        response.on("data", (d) => (body += d));
+        response.on("end", () => {
           try {
             resolve(JSON.parse(body));
           } catch (e) {
@@ -45,9 +44,9 @@ const fetchGoogleTokens = (code: string, redirectUri: string): Promise<any> => {
         });
       },
     );
-    req.on("error", reject);
-    req.write(postData);
-    req.end();
+    request.on("error", reject);
+    request.write(postData);
+    request.end();
   });
 };
 
