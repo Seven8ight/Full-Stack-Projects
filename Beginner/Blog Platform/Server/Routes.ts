@@ -5,6 +5,9 @@ import { AuthController } from "./Src/Modules/auth/auth.controller.js";
 import { BlogController } from "./Src/Modules/blogs/blog.controller.js";
 import { CommentController } from "./Src/Modules/comments/comment.controller.js";
 import { FeedbackController } from "./Src/Modules/feedback/feedback.controller.js";
+import { LikeController } from "./Src/Modules/likes/likes.controller.js";
+import { TagController } from "./Src/Modules/tags/tags.controller.js";
+import { AnalyticsController } from "./Src/Modules/analytics/analytics.controller.js";
 
 type Controller = {
   name: string;
@@ -35,5 +38,17 @@ export const RouteControllers: Controller[] = [
   {
     name: "feedback",
     controller: FeedbackController,
+  },
+  {
+    name: "likes",
+    controller: LikeController,
+  },
+  {
+    name: "tags",
+    controller: TagController,
+  },
+  {
+    name: "analytics",
+    controller: AnalyticsController,
   },
 ];
