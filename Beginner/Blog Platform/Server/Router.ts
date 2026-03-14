@@ -1,8 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { RouteControllers } from "./Routes.js";
 import { Database, pgPool } from "./Src/Config/Database.js";
+import { RateLimiter } from "./Src/Middleware/RateLimiter.js";
 
-export default function Router(
+const database = new Database(pgPool);
+
+export default async function Router(
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>,
 ) {
@@ -31,8 +34,6 @@ export default function Router(
     pathNames = requestUrl.pathname.split("/").filter(Boolean),
     apiRoute = pathNames[1];
 
-  const database = new Database(pgPool);
-
   if (!apiRoute) {
     response.writeHead(404);
     response.end(
@@ -47,8 +48,10 @@ export default function Router(
     (route) => route.name.toLowerCase() == apiRoute.toLowerCase(),
   );
 
-  if (matchedRoute) return matchedRoute.controller(database, request, response);
-  else {
+  if (matchedRoute) {
+    if (matchedRoute.name != "auth") await RateLimiter(request, response);
+    return matchedRoute.controller(database, request, response);
+  } else {
     response.writeHead(404);
     response.end(JSON.stringify({ error: "Route does not exist" }));
     return;

@@ -10,7 +10,7 @@ export const Info = (message: string) =>
     process.stdout.write(
       `${chalk.underline.yellowBright("Warning")}[${date.toUTCString()}]: ${chalk.whiteBright(message)}\n`,
     ),
-  Error = (message: string, stack: Error) => {
+  ErrorMsg = (message: string, stack: Error) => {
     process.stdout.write(
       `${chalk.underline.redBright("Error")}[${date.toUTCString()}]: ${chalk.whiteBright(message)}\n`,
     );

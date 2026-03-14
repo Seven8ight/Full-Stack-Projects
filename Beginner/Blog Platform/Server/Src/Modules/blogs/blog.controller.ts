@@ -5,6 +5,11 @@ import type { BlogRepository } from "./blog.types.js";
 import { BlogRepo } from "./blog.repository.js";
 import type { Database } from "../../Config/Database.js";
 import { BlogServ } from "./blog.service.js";
+import {
+  expireResource,
+  getResource,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const BlogController = (
   Database: Database,
@@ -32,21 +37,43 @@ export const BlogController = (
             getType = searchParams.get("type");
 
           if (getType == "one") {
-            const retrieveBlog = await blogService.getBlogById(
-              parsedReqBody.id,
-            );
+            const blogInCache = await getResource(`blog:${parsedReqBody.id}`);
+            let responseBody;
+
+            if (!blogInCache) {
+              const retrieveBlog = await blogService.getBlogById(
+                parsedReqBody.id,
+              );
+
+              await setResource(
+                `blog:${parsedReqBody.id}`,
+                retrieveBlog,
+                "other",
+              );
+
+              responseBody = retrieveBlog;
+            } else responseBody = blogInCache;
 
             response.writeHead(200, {
               "content-type": "application/json",
             });
-            response.end(JSON.stringify(retrieveBlog));
+            response.end(JSON.stringify(responseBody));
           } else if (getType == "user") {
-            const userBlogs = await blogService.getUserBlogs(user.id);
+            const blogsInCache = await getResource(`blog:${user.id}`);
+            let responseBody;
+
+            if (!blogsInCache) {
+              const userBlogs = await blogService.getUserBlogs(user.id);
+
+              await setResource(`blog:${user.id}`, userBlogs, "other");
+
+              responseBody = userBlogs;
+            } else responseBody = blogsInCache;
 
             response.writeHead(200, {
               "content-type": "application/json",
             });
-            response.end(JSON.stringify(userBlogs));
+            response.end(JSON.stringify(responseBody));
           } else {
             response.writeHead(404);
             response.end(
@@ -63,6 +90,8 @@ export const BlogController = (
             parsedReqBody,
           );
 
+          await setResource(`blog:${createBlog.id}`, createBlog, "other");
+
           response.writeHead(201, {
             "content-type": "application/json",
           });
@@ -71,6 +100,8 @@ export const BlogController = (
           break;
         case "PATCH":
           const editBlog = await blogService.editBlog(parsedReqBody);
+
+          await setResource(`blog:${editBlog.id}`, editBlog, "other");
 
           response.writeHead(201, {
             "content-type": "application/json",
@@ -82,9 +113,11 @@ export const BlogController = (
           const deletesearchParams = requestUrl.searchParams,
             deletetype = deletesearchParams.get("type");
 
-          if (deletetype == "one")
+          if (deletetype == "one") {
             await blogService.deleteBlog(parsedReqBody.id, user.id);
-          else if (deletetype == "user")
+
+            await expireResource(parsedReqBody.id, 10);
+          } else if (deletetype == "user")
             await blogService.deleteUserBlogs(user.id);
           else {
             response.writeHead(400);

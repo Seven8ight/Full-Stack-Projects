@@ -2,6 +2,11 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Database } from "../../Config/Database.js";
 import { TagRepo } from "./tags.repository.js";
 import { TagServ } from "./tags.service.js";
+import {
+  expireResource,
+  getResource,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const TagController = (
   database: Database,
@@ -22,16 +27,27 @@ export const TagController = (
 
     switch (request.method) {
       case "GET":
-        const tags = await tagService.getTags();
+        const tagsInCache = await getResource(`tags`);
+        let responseBody;
+
+        if (!tagsInCache) {
+          const tags = await tagService.getTags();
+
+          await setResource(`tags`, tagsInCache, "other");
+
+          responseBody = tags;
+        } else responseBody = tagsInCache;
 
         response.writeHead(200, {
           "content-type": "application/json",
         });
-        response.end(JSON.stringify(tags));
+        response.end(JSON.stringify(responseBody));
 
         break;
       case "POST":
         const newTag = await tagService.createTag(parsedReqBody);
+
+        expireResource(`tags`, 1);
 
         response.writeHead(200, {
           "content-type": "application/json",
@@ -41,6 +57,8 @@ export const TagController = (
         break;
       case "PATCH":
         const patchedTag = await tagService.createTag(parsedReqBody);
+
+        expireResource(`tags`, 1);
 
         response.writeHead(200, {
           "content-type": "application/json",

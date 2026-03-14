@@ -4,6 +4,11 @@ import { verifyUser } from "../../Middleware/Authentication.js";
 import type { PublicUser } from "../users/user.types.js";
 import { LikeRepo } from "./likes.repository.js";
 import { LikeServ } from "./likes.service.js";
+import {
+  expireResource,
+  getResource,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const LikeController = async (
   database: Database,
@@ -32,14 +37,39 @@ export const LikeController = async (
 
           let responseBody: any;
 
-          if (type == "blog")
-            responseBody = await likeService.getLikesByBlogId(
-              parsedReqBody.blog_id,
+          if (type == "blog") {
+            const blogLikesInCache = await getResource(
+              `blog-likes:${parsedReqBody.blog_id}`,
             );
-          else if (type == "comment")
-            responseBody = await likeService.getLikesByCommentId(
-              parsedReqBody.comment_id,
+
+            if (!blogLikesInCache) {
+              responseBody = await likeService.getLikesByBlogId(
+                parsedReqBody.blog_id,
+              );
+
+              await setResource(
+                `blog-likes:${parsedReqBody.blog_id}`,
+                responseBody,
+                "other",
+              );
+            } else responseBody = blogLikesInCache;
+          } else if (type == "comment") {
+            const commentsLikesInCache = await getResource(
+              `comment-likes:${parsedReqBody.comment_id}`,
             );
+
+            if (!commentsLikesInCache) {
+              responseBody = await likeService.getLikesByCommentId(
+                parsedReqBody.comment_id,
+              );
+
+              await setResource(
+                `comment-likes:${parsedReqBody.comment_id}`,
+                responseBody,
+                "other",
+              );
+            } else responseBody = commentsLikesInCache;
+          }
 
           response.writeHead(200, {
             "content-type": "application/json",
@@ -50,6 +80,11 @@ export const LikeController = async (
         case "POST":
           const newLike = await likeService.addLike(user.id, parsedReqBody);
 
+          if (parsedReqBody.blog_id)
+            await expireResource(`blog-likes:${parsedReqBody.blog_id}`, 1);
+          else if (parsedReqBody.comment_id)
+            await expireResource(`comment-likes:${parsedReqBody.blog_id}`, 1);
+
           response.writeHead(201);
           response.end(JSON.stringify(newLike));
 
@@ -59,6 +94,11 @@ export const LikeController = async (
             user.id,
             parsedReqBody,
           );
+
+          if (parsedReqBody.blog_id)
+            await expireResource(`blog-likes:${parsedReqBody.blog_id}`, 1);
+          else if (parsedReqBody.comment_id)
+            await expireResource(`comment-likes:${parsedReqBody.blog_id}`, 1);
 
           response.writeHead(201);
           response.end(JSON.stringify(patchedLike));

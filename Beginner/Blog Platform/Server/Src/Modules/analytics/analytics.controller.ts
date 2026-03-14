@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Database } from "../../Config/Database.js";
 import { AnalyticsRepo } from "./analytics.repository.js";
 import { AnalyticServ } from "./analytics.service.js";
+import { getResource, setResource } from "../../Config/Cache.js";
 
 export const AnalyticsController = async (
   database: Database,
@@ -27,25 +28,55 @@ export const AnalyticsController = async (
             type = searchParams.get("by");
 
           if (type == "id") {
-            const retrieveBlogAnalytics = await analyticsRepo.getBlogAnalytic(
-              parsedReqBody.blog_id,
+            const analyticsInCacheById = await getResource(
+              `Id-analytics:${parsedReqBody.blog_id}`,
             );
+            let responseBody;
 
-            response.writeHead(200, {
-              "content-type": "application/json",
-            });
-            response.end(JSON.stringify(retrieveBlogAnalytics));
-          } else if (type == "date") {
-            const retrieveBlogAnalyticsByDate =
-              await analyticsRepo.getBlogAnalyticsByDate(
+            if (!analyticsInCacheById) {
+              const retrieveBlogAnalytics = await analyticsRepo.getBlogAnalytic(
                 parsedReqBody.blog_id,
-                parsedReqBody.date,
               );
 
+              await setResource(
+                `Id-analytics:${parsedReqBody.blog_id}`,
+                retrieveBlogAnalytics,
+                "other",
+              );
+
+              responseBody = retrieveBlogAnalytics;
+            } else responseBody = analyticsInCacheById;
+
             response.writeHead(200, {
               "content-type": "application/json",
             });
-            response.end(JSON.stringify(retrieveBlogAnalyticsByDate));
+            response.end(JSON.stringify(responseBody));
+          } else if (type == "date") {
+            const blogAnalyticsByDateInCache = await getResource(
+              `Date-analytics:${parsedReqBody.blog_id}`,
+            );
+            let responseBody;
+
+            if (!blogAnalyticsByDateInCache) {
+              const retrieveBlogAnalyticsByDate =
+                await analyticsRepo.getBlogAnalyticsByDate(
+                  parsedReqBody.blog_id,
+                  parsedReqBody.date,
+                );
+
+              await setResource(
+                `Date-analytics:${parsedReqBody.blog_id}`,
+                retrieveBlogAnalyticsByDate,
+                "other",
+              );
+
+              responseBody = retrieveBlogAnalyticsByDate;
+            } else responseBody = blogAnalyticsByDateInCache;
+
+            response.writeHead(200, {
+              "content-type": "application/json",
+            });
+            response.end(JSON.stringify(responseBody));
           } else {
             response.writeHead(404);
             response.end(

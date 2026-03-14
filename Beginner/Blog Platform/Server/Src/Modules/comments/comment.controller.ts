@@ -5,6 +5,7 @@ import { CommentRepository } from "./comment.repository.js";
 import { CommentServ } from "./comment.service.js";
 import type { CommentService } from "./comment.types.js";
 import type { PublicUser } from "../users/user.types.js";
+import { getResource, setResource } from "../../Config/Cache.js";
 
 export const CommentController = (
   database: Database,
@@ -30,14 +31,27 @@ export const CommentController = (
 
       switch (request.method) {
         case "GET":
-          const blogComments = commentService.getBlogComments(
-            parsedReqBody.blog_id,
+          const commentsInCache = await getResource(
+            `comments:${parsedReqBody.blog_id}`,
           );
+          let responseBody: any;
+
+          if (!commentsInCache) {
+            const blogComments = commentService.getBlogComments(
+              parsedReqBody.blog_id,
+            );
+
+            await setResource(
+              `comments:${parsedReqBody.blog_id}`,
+              blogComments,
+              "other",
+            );
+          } else responseBody = commentsInCache;
 
           response.writeHead(200, {
             "content-type": "application/json",
           });
-          response.end(JSON.stringify(blogComments));
+          response.end(JSON.stringify(responseBody));
 
           break;
         case "POST":

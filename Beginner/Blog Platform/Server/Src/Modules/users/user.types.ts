@@ -6,6 +6,7 @@ export type User = {
   is_verified: boolean;
   profile_image_url: string;
   bio: string;
+  role: string;
   preferred_topics: string[];
   oauth: string | boolean;
   oauth_provider: string;

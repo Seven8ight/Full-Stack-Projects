@@ -4,6 +4,12 @@ import { UserService } from "./user.service.js";
 import type { Database } from "../../Config/Database.js";
 import type { PublicUser } from "./user.types.js";
 import { verifyUser } from "../../Middleware/Authentication.js";
+import {
+  expireResource,
+  getResource,
+  sanitizeForCache,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const UserController = async (
   Database: Database,
@@ -18,10 +24,20 @@ export const UserController = async (
   try {
     switch (request.method) {
       case "GET":
-        const userObject = await userService.getUser(user.id);
+        let userInCache = await getResource(`user:${user.id}`),
+          responseData: Record<string, any>;
 
-        response.writeHead(200);
-        response.end(JSON.stringify(userObject));
+        if (!userInCache) {
+          const userObject = await userService.getUser(user.id),
+            cacheObject = sanitizeForCache(userObject);
+
+          await setResource(`user:${user.id}`, cacheObject, "other");
+
+          responseData = userObject;
+        } else responseData = userInCache;
+
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(JSON.stringify(responseData));
 
         break;
       case "PATCH":
@@ -36,9 +52,12 @@ export const UserController = async (
             const parsedRequestBody = JSON.parse(unparsedRequestBody || "{}");
 
             const userUpdate = await userService.editUser(
-              user.id,
-              parsedRequestBody,
-            );
+                user.id,
+                parsedRequestBody,
+              ),
+              cacheObject = sanitizeForCache(userUpdate);
+
+            await setResource(`user:${user.id}`, cacheObject, "other");
 
             response.writeHead(200);
             response.end(JSON.stringify(userUpdate));
@@ -55,6 +74,8 @@ export const UserController = async (
         break;
       case "DELETE":
         await userService.deleteUser(user.id);
+
+        await expireResource(`user:${user.id}`, 5);
 
         response.writeHead(204);
         response.end();

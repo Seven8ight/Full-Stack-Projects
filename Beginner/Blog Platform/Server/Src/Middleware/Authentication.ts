@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { verifyAccessToken } from "../../Utils/Jwt.js";
+import type { PublicUser } from "../Modules/users/user.types.js";
 
 export const verifyUser = (
     request: IncomingMessage,
@@ -24,10 +25,19 @@ export const verifyUser = (
 
       return user;
     } catch (error) {
-      throw error;
+      response.writeHead(403);
+      response.end(JSON.stringify({ error: (error as Error).message }));
     }
   },
   roleChecker = (
     request: IncomingMessage,
     response: ServerResponse<IncomingMessage>,
-  ) => {};
+  ) => {
+    try {
+      const user = verifyUser(request, response) as PublicUser;
+
+      return user.role;
+    } catch (error) {
+      throw error;
+    }
+  };

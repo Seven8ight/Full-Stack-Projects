@@ -1,4 +1,5 @@
 import { Warning } from "../../../Utils/Logger.js";
+import { expireResource } from "../../Config/Cache.js";
 import type {
   Blog,
   BlogRepository,

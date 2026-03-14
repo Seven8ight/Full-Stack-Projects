@@ -6,6 +6,7 @@ import type {
   createBlogDTO,
   updateBlogDTO,
 } from "./blog.types.js";
+import { expireResource } from "../../Config/Cache.js";
 
 export class BlogRepo implements BlogRepository {
   constructor(private dbClient: Database) {}
@@ -141,10 +142,13 @@ export class BlogRepo implements BlogRepository {
     try {
       const date = new Date();
 
-      await this.dbClient.query(
-        "UPDATE blogs set deleted_at=$2 WHERE owner_id=$1",
+      const userBlogs: QueryResult<Blog> = await this.dbClient.query(
+        "UPDATE blogs set deleted_at=$2 WHERE owner_id=$1 RETURNING *",
         [userId, date.toUTCString()],
       );
+
+      for (let blog of userBlogs.rows)
+        await expireResource(`blog:${blog.id}`, 10);
     } catch (error) {
       Error(`${(error as Error).message}`);
       throw error;
