@@ -1,23 +1,52 @@
 import amqp from "amqplib";
 import { RABBITMQ_URL } from "../Config/Env.js";
 
-const channel = amqp.connect("");
-channel.then(async (connection) => {
-  const rabbitChannel: amqp.Channel = await connection.createChannel();
-
-  rabbitChannel.assertExchange("broadcast", "fanout");
-
-  rabbitChannel.publish("Broadcast", "", Buffer.from([]));
-});
+type Work = {
+  type: "Cache";
+  message: any;
+};
 
 export class RabbitMq {
-  channel: amqp.ChannelModel | null = null;
+  connection: amqp.ChannelModel | null = null;
+  rabbitChannel: amqp.Channel | null = null;
+  rabbitExchange: amqp.Replies.AssertExchange | null = null;
+  exchangeName: string;
 
-  constructor() {}
-
-  async createConnection(): Promise<void> {
-    if (this.channel) this.channel = await amqp.connect(RABBITMQ_URL!);
+  constructor(exchangeName: string) {
+    this.exchangeName = exchangeName;
   }
 
-  async createChannel() {}
+  async createConnection(exchangeName: string): Promise<void> {
+    this.exchangeName = exchangeName;
+    if (!this.connection) this.connection = await amqp.connect(RABBITMQ_URL!);
+
+    this.rabbitChannel = await this.connection.createChannel();
+    this.rabbitExchange = await this.rabbitChannel.assertExchange(
+      this.exchangeName,
+      "fanout",
+      {
+        durable: true,
+      },
+    );
+  }
+
+  async publishMessage(message: any) {
+    if (!this.connection) await this.createConnection(this.exchangeName);
+
+    this.rabbitChannel!.publish(this.exchangeName, "", Buffer.from(message));
+  }
+
+  async consumeMessage() {
+    if (!this.connection) {
+      await this.createConnection(this.exchangeName);
+      return;
+    }
+
+    this.rabbitChannel!.consume(
+      this.exchangeName,
+      (message: amqp.ConsumeMessage | null) => {
+        if (message) console.log(message.content.toString());
+      },
+    );
+  }
 }

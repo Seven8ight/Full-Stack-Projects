@@ -1,6 +1,15 @@
 import type { Token, Tokens } from "../../../Utils/Jwt.js";
 import type { User } from "../users/user.types.js";
 
+export type VerificationCode = {
+  id: string;
+  user_id: string;
+  code: string;
+  created_at: string;
+  expired_at: string;
+};
+export type PublicVerificationCode = Omit<VerificationCode, "code">;
+
 export type Session = {
   id: string;
   user_id: string;
@@ -41,9 +50,17 @@ export interface AuthRepository {
   createSession: (session: createSessionDTO) => Promise<void>;
   retrieveSessions: (userId: string) => Promise<Session | Session[]>;
   refreshAuthToken: (userId: string, refreshToken: string) => Promise<Token>;
-  verifyUser: (userId: string, status: boolean) => Promise<void>;
   logOut: (userId: string, refreshToken: string) => Promise<void>;
   logOutAllDevices: (userId: string) => Promise<void>;
+  generateAuthCodeForVerification: (
+    userId: string,
+    code: number,
+  ) => Promise<PublicVerificationCode>;
+  verifyAuthCodeForVerification: (
+    verificationId: string,
+    userId: string,
+    code: string,
+  ) => Promise<boolean>;
 }
 
 export interface AuthServ {
@@ -57,7 +74,15 @@ export interface AuthServ {
     type: "legacy" | "oauth",
   ) => Promise<Tokens>;
   refreshAuthToken: (userId: string, refreshToken: string) => Promise<Token>;
-  verifyUser: (userId: string, status: boolean) => Promise<void>;
   logOut: (userId: string, refreshToken: string) => Promise<void>;
   logOutAllDevices: (userId: string) => Promise<void>;
+  generateAuthCodeForVerification: (
+    userId: string,
+    code: number,
+  ) => Promise<PublicVerificationCode>;
+  verifyAuthCodeForVerification: (
+    verificationId: string,
+    userId: string,
+    code: string,
+  ) => Promise<boolean>;
 }

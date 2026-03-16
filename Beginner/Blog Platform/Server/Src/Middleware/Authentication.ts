@@ -27,6 +27,7 @@ export const verifyUser = (
     } catch (error) {
       response.writeHead(403);
       response.end(JSON.stringify({ error: (error as Error).message }));
+      return;
     }
   },
   roleChecker = (

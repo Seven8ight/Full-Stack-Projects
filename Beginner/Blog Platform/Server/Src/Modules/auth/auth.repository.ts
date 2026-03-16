@@ -9,8 +9,10 @@ import type {
   loginUserDTO,
   registerUserDTO,
   Session,
+  VerificationCode,
 } from "./auth.types.js";
-import { compareHash, passwordHash } from "../../../Utils/Hash.js";
+import { codeHash, compareHash, passwordHash } from "../../../Utils/Hash.js";
+import { VCodeGenerator } from "../../../Utils/GenerateCode.js";
 
 export class AuthRepo implements AuthRepository {
   constructor(private dbClient: Database) {}
@@ -91,6 +93,62 @@ export class AuthRepo implements AuthRepository {
       } else return userBody;
     } catch (error) {
       Warning("Error occurred at auth repo login user");
+      throw error;
+    }
+  }
+
+  async generateAuthCodeForVerification(userId: string, code: number) {
+    try {
+      const hashedAuthCode = codeHash(code);
+
+      const verificationBlock: QueryResult<VerificationCode> =
+        await this.dbClient.transaction(
+          async (client: PoolClient) =>
+            await client.query(
+              "INSERT INTO verification_codes(user_id,code) VALUES($1,$2)",
+              [userId, hashedAuthCode],
+            ),
+        );
+
+      return verificationBlock.rows[0]!;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async verifyAuthCodeForVerification(
+    verificationId: string,
+    userId: string,
+    code: string,
+  ) {
+    try {
+      const verificationRecord: QueryResult<VerificationCode> =
+        await this.dbClient.query(
+          "SELECT * FROM verification_codes WHERE id=$1 and user_id=$2",
+          [verificationId, userId],
+        );
+
+      if (verificationRecord.rowCount && verificationRecord.rowCount <= 0)
+        throw new Error("Verification record not found");
+
+      const expiryDate = new Date(verificationRecord.rows[0]!.expired_at);
+
+      if (expiryDate > new Date()) throw new Error("Code has expired");
+
+      const comparison = compareHash(code, verificationRecord.rows[0]!.code);
+
+      if (comparison) {
+        const verificationBlock: QueryResult<VerificationCode> =
+          await this.dbClient.transaction(async (client: PoolClient) => {
+            return await client.query(
+              "UPDATE users SET is_verified=true WHERE user_id=$1",
+              [userId],
+            );
+          });
+
+        return true;
+      } else return false;
+    } catch (error) {
       throw error;
     }
   }
@@ -226,19 +284,6 @@ export class AuthRepo implements AuthRepository {
       );
     } catch (error) {
       Warning("Error at logging out all devices");
-      throw error;
-    }
-  }
-
-  async verifyUser(userId: string, status: boolean): Promise<void> {
-    try {
-      await this.dbClient.transaction(async (client: PoolClient) => {
-        return await client.query(
-          "UPDATE users SET is_verified=$2 WHERE user_id=$1",
-          [userId, status],
-        );
-      });
-    } catch (error) {
       throw error;
     }
   }

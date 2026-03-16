@@ -12,6 +12,9 @@ import type { loginUserDTO, registerUserDTO } from "./auth.types.js";
 import https from "https";
 import { verifyAccessToken, verifyRefreshToken } from "../../../Utils/Jwt.js";
 import type { PublicUser } from "../users/user.types.js";
+import { verifyUser } from "../../Middleware/Authentication.js";
+import { VCodeGenerator } from "../../../Utils/GenerateCode.js";
+import { sendMail } from "../../../Utils/MailHandler.js";
 
 const fetchGoogleTokens = (code: string, redirectUri: string): Promise<any> => {
   const postData = new URLSearchParams({
@@ -86,23 +89,26 @@ export const AuthController = (
           : {};
 
       switch (pathNames[2]) {
-        case "register":
+        case "register": {
           if (pathNames[3] === "legacy") {
             const newUserTokens = await authService.registerUser(
               { ...parsedRequestBody, ...sessionMetadata },
               "legacy",
             );
             response.writeHead(201, {
-              // We send the tokens via cookie just like OAuth
               "set-cookie": `tokens=${JSON.stringify(newUserTokens)}; HttpOnly; SameSite=Lax; Path=/`,
               "Content-Type": "application/json",
             });
 
-            // You can still return the user object (without tokens) if the UI needs it
-            response.end(JSON.stringify({ message: "Signup successful" }));
+            response.end(
+              JSON.stringify({
+                message: "Signup successful, verification code sent",
+              }),
+            );
           } else if (pathNames[3] === "oauth" && pathNames[4] === "google") {
             if (pathNames[5] === "signup") {
               const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_SIGNUP_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile`;
+
               response.writeHead(301, { location: authUrl });
               response.end();
             } else if (pathNames[5] === "callback") {
@@ -151,8 +157,9 @@ export const AuthController = (
             );
           }
           break;
+        }
 
-        case "login":
+        case "login": {
           if (pathNames[3] === "legacy") {
             const logInUser = await authService.loginUser(
               { ...parsedRequestBody, ...sessionMetadata },
@@ -217,6 +224,7 @@ export const AuthController = (
             );
           }
           break;
+        }
 
         case "logout": {
           const type = requestUrl.searchParams.get("type");
@@ -267,7 +275,9 @@ export const AuthController = (
           break;
         }
 
-        case "retrieve":
+        case "retrieve": {
+          const { authorization } = request.headers;
+
           if (request.method != "GET") {
             response.writeHead(405);
             return response.end(
@@ -276,7 +286,7 @@ export const AuthController = (
               }),
             );
           }
-          const { authorization } = request.headers;
+
           if (!authorization) {
             response.writeHead(401);
             return response.end(
@@ -295,26 +305,66 @@ export const AuthController = (
           response.writeHead(200);
           response.end(JSON.stringify(userSessions));
           break;
+        }
 
-        case "verify": {
+        case "verification": {
           const { authorization } = request.headers;
+
           if (!authorization) {
             response.writeHead(401);
             response.end(
               JSON.stringify({
-                error: "Authenticate yourself first",
+                error: "User auth token not provided",
               }),
             );
             return;
           }
 
-          const userObject = verifyAccessToken(authorization),
-            userId = (userObject as PublicUser).id;
+          const user = verifyUser(request, response) as PublicUser;
 
-          await authService.verifyUser(userId, true);
+          const searchParams = requestUrl.searchParams,
+            type = searchParams.get("type");
 
-          response.writeHead(200);
-          response.end(JSON.stringify({ message: "Verified" }));
+          if (type == "verify") {
+            const verification =
+              await authService.verifyAuthCodeForVerification(
+                parsedRequestBody.id,
+                user.id,
+                parsedRequestBody.code,
+              );
+
+            if (verification) {
+              response.writeHead(200);
+              response.end();
+            } else {
+              response.writeHead(400);
+              response.end({
+                error: "Verification code is invalid",
+              });
+            }
+          } else if (type == "resend") {
+            const authCode = VCodeGenerator();
+
+            const newCode = await authService.generateAuthCodeForVerification(
+              user.id,
+              authCode,
+            );
+            await sendMail(user.email, newCode);
+
+            response.writeHead(200, {
+              "content-type": "application/json",
+            });
+            response.end(JSON.stringify(newCode));
+          } else {
+            response.writeHead(404);
+            response.end(
+              JSON.stringify({
+                error: "Type search params not specified",
+              }),
+            );
+          }
+
+          break;
         }
 
         default:

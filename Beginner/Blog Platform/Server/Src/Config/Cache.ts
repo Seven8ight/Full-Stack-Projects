@@ -6,10 +6,6 @@ export const cacheClient = redis.createClient({
   url: REDIS_URL!,
 });
 
-cacheClient.on("error", (err) => {
-  ErrorMsg("Redis Client Error:", err);
-});
-
 export function sanitizeForCache(
   obj: Record<string, any>,
 ): Record<string, string | number> {

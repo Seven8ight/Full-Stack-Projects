@@ -1,5 +1,7 @@
+import { VCodeGenerator } from "../../../Utils/GenerateCode.js";
 import { generateToken, type Token, type Tokens } from "../../../Utils/Jwt.js";
 import { Warning } from "../../../Utils/Logger.js";
+import { sendMail } from "../../../Utils/MailHandler.js";
 import type { PublicUser, User } from "../users/user.types.js";
 import type { AuthRepo } from "./auth.repository.js";
 import type {
@@ -7,6 +9,7 @@ import type {
   loginUserDTO,
   registerUserDTO,
   Session,
+  VerificationCode,
 } from "./auth.types.js";
 
 export class AuthService implements AuthServ {
@@ -48,6 +51,14 @@ export class AuthService implements AuthServ {
             "legacy",
           ),
           newUserTokens = generateToken(this.createPublicUser(newUser));
+
+        const userverificationCode = VCodeGenerator();
+
+        await this.generateAuthCodeForVerification(
+          newUser.id,
+          userverificationCode,
+        );
+        await sendMail(newUser.email, userverificationCode);
 
         await this.authRepo.createSession({
           ...userData,
@@ -151,14 +162,37 @@ export class AuthService implements AuthServ {
     }
   }
 
-  async verifyUser(userId: string, status: boolean): Promise<void> {
-    if (!userId || !status)
-      throw new Error("User id and status must be provided");
+  async generateAuthCodeForVerification(userId: string, authCode: number) {
+    if (!userId) throw new Error("User id is not provided");
 
     try {
-      await this.authRepo.verifyUser(userId, status);
+      const verificationIdentifier =
+          await this.authRepo.generateAuthCodeForVerification(userId, authCode),
+        { code, ...publicVerficicationBlock } = verificationIdentifier;
+
+      return { ...publicVerficicationBlock };
     } catch (error) {
-      Warning("Error at verification step service");
+      throw error;
+    }
+  }
+
+  async verifyAuthCodeForVerification(
+    verificationId: string,
+    userId: string,
+    code: string,
+  ) {
+    if (!verificationId || !userId || !code)
+      throw new Error("Verification id, user id and code must be provided");
+
+    try {
+      const verification = await this.authRepo.verifyAuthCodeForVerification(
+        verificationId,
+        userId,
+        code,
+      );
+
+      return verification;
+    } catch (error) {
       throw error;
     }
   }
