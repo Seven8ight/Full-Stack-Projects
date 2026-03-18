@@ -1,9 +1,9 @@
 import { Warning } from "../../../Utils/Logger.js";
-import { expireResource } from "../../Config/Cache.js";
 import type {
   Blog,
   BlogRepository,
   BlogService,
+  BlogTag,
   createBlogDTO,
   updateBlogDTO,
 } from "./blog.types.js";
@@ -19,7 +19,7 @@ export class BlogServ implements BlogService {
     "cover_image_url",
     "status",
     "tags",
-    "media_urls",
+    "media",
   ] as const satisfies readonly (keyof createBlogDTO)[];
 
   private blogDataHasFields(data: any): data is createBlogDTO {
@@ -114,6 +114,26 @@ export class BlogServ implements BlogService {
       return retreiveUserBlogs;
     } catch (error) {
       Warning(`Error at blog service`);
+      throw error;
+    }
+  }
+
+  async getAllBlogTags(): Promise<BlogTag[]> {
+    try {
+      return await this.blogRepo.getAllBlogTags();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getBlogTagsByBlogId(blogId: string): Promise<BlogTag[]> {
+    try {
+      if (!blogId) throw new Error("Blog id not provided");
+
+      const specificBlogTags = await this.blogRepo.getBlogTagsByBlogId(blogId);
+
+      return specificBlogTags;
+    } catch (error) {
       throw error;
     }
   }

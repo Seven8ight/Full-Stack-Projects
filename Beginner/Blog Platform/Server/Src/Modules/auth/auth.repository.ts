@@ -1,10 +1,6 @@
 import type { PoolClient, QueryResult } from "pg";
 import type { Database } from "../../Config/Database.js";
-import {
-  refreshAccessToken,
-  verifyRefreshToken,
-  type Token,
-} from "../../../Utils/Jwt.js";
+import { refreshAccessToken, type Token } from "../../../Utils/Jwt.js";
 import { Warning } from "../../../Utils/Logger.js";
 import type { User } from "../users/user.types.js";
 import type {

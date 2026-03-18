@@ -36,49 +36,79 @@ export const BlogController = (
           const searchParams = requestUrl.searchParams,
             getType = searchParams.get("type");
 
-          if (getType == "one") {
-            const blogInCache = await getResource(`blog:${parsedReqBody.id}`);
-            let responseBody;
+          if (getType == "blogs") {
+            const blogType = searchParams.get("blogtype");
 
-            if (!blogInCache) {
-              const retrieveBlog = await blogService.getBlogById(
-                parsedReqBody.id,
+            if (blogType == "one") {
+              const blogInCache = await getResource(`blog:${parsedReqBody.id}`);
+              let responseBody;
+
+              if (!blogInCache) {
+                const retrieveBlog = await blogService.getBlogById(
+                  parsedReqBody.id,
+                );
+
+                await setResource(
+                  `blog:${parsedReqBody.id}`,
+                  retrieveBlog,
+                  "other",
+                );
+
+                responseBody = retrieveBlog;
+              } else responseBody = blogInCache;
+
+              response.writeHead(200, {
+                "content-type": "application/json",
+              });
+              response.end(JSON.stringify(responseBody));
+            } else if (blogType == "user") {
+              const blogsInCache = await getResource(`blog:${user.id}`);
+              let responseBody;
+
+              if (!blogsInCache) {
+                const userBlogs = await blogService.getUserBlogs(user.id);
+
+                await setResource(`blog:${user.id}`, userBlogs, "other");
+
+                responseBody = userBlogs;
+              } else responseBody = blogsInCache;
+
+              response.writeHead(200, {
+                "content-type": "application/json",
+              });
+              response.end(JSON.stringify(responseBody));
+            } else {
+              response.writeHead(404);
+              response.end(
+                JSON.stringify({
+                  error: "Invalid search param, lacking type",
+                }),
               );
+            }
+          } else if (getType == "tags") {
+            const tagType = searchParams.get("tagtype");
 
-              await setResource(
-                `blog:${parsedReqBody.id}`,
-                retrieveBlog,
-                "other",
-              );
+            if (tagType == "all") {
+              const tags = await blogService.getAllBlogTags();
 
-              responseBody = retrieveBlog;
-            } else responseBody = blogInCache;
+              response.writeHead(200, {
+                "content-type": "application/json",
+              });
+              response.end(JSON.stringify(tags));
+            } else if (tagType == "one") {
+              const blogId = parsedReqBody.blog_id,
+                blogTags = await blogService.getBlogTagsByBlogId(blogId);
 
-            response.writeHead(200, {
-              "content-type": "application/json",
-            });
-            response.end(JSON.stringify(responseBody));
-          } else if (getType == "user") {
-            const blogsInCache = await getResource(`blog:${user.id}`);
-            let responseBody;
-
-            if (!blogsInCache) {
-              const userBlogs = await blogService.getUserBlogs(user.id);
-
-              await setResource(`blog:${user.id}`, userBlogs, "other");
-
-              responseBody = userBlogs;
-            } else responseBody = blogsInCache;
-
-            response.writeHead(200, {
-              "content-type": "application/json",
-            });
-            response.end(JSON.stringify(responseBody));
+              response.writeHead(200, {
+                "content-type": "application/json",
+              });
+              response.end(JSON.stringify(blogTags));
+            }
           } else {
             response.writeHead(404);
             response.end(
               JSON.stringify({
-                error: "Invalid search param, lacking type",
+                error: "Specify type in search params. Either blogs or tags",
               }),
             );
           }
