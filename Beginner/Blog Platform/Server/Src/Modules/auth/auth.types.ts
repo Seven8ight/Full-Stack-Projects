@@ -68,7 +68,10 @@ export interface AuthServ {
     userData: registerUserDTO,
     type: "legacy" | "oauth",
     oauthProvider?: string,
-  ) => Promise<Tokens>;
+  ) => Promise<{
+    userTokens: Tokens;
+    verificationBlock?: PublicVerificationCode;
+  }>;
   loginUser: (
     userCredentials: loginUserDTO,
     type: "legacy" | "oauth",

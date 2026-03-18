@@ -2,7 +2,7 @@ import path from "path";
 import { dbClient } from "../Src/Config/Database.js";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
-import { Error, Info } from "../Utils/Logger.js";
+import { ErrorMsg, Info } from "../Utils/Logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,7 +51,7 @@ async function runMigrations() {
     await createMigrationsTable();
     await runMigrations();
   } catch (err) {
-    Error(`Migration error: ${err}`, err as Error);
+    ErrorMsg(`Migration error: ${err}`, err as Error);
   } finally {
     await dbClient.close();
   }

@@ -91,15 +91,26 @@ export const AuthController = (
       switch (pathNames[2]) {
         case "register": {
           if (pathNames[3] === "legacy") {
-            const newUserTokens = await authService.registerUser(
+            const newUser = await authService.registerUser(
               { ...parsedRequestBody, ...sessionMetadata },
               "legacy",
             );
-            response.writeHead(201, {
-              "set-cookie": `tokens=${JSON.stringify(newUserTokens)}; HttpOnly; SameSite=Lax; Path=/`,
-              "Content-Type": "application/json",
-            });
 
+            if (newUser.verificationBlock)
+              response.writeHead(201, {
+                "set-cookie": `tokens=${JSON.stringify({
+                  verificationId: newUser.verificationBlock.id,
+                  Tokens: newUser.userTokens,
+                })}; HttpOnly; SameSite=Lax; Path=/`,
+                "Content-Type": "application/json",
+              });
+            else
+              response.writeHead(201, {
+                "set-cookie": `tokens=${JSON.stringify({
+                  Tokens: newUser.userTokens,
+                })}; HttpOnly; SameSite=Lax; Path=/`,
+                "Content-Type": "application/json",
+              });
             response.end(
               JSON.stringify({
                 message: "Signup successful, verification code sent",
@@ -165,13 +176,11 @@ export const AuthController = (
               { ...parsedRequestBody, ...sessionMetadata },
               "legacy",
             );
+
             response.writeHead(201, {
-              // We send the tokens via cookie just like OAuth
               "set-cookie": `tokens=${JSON.stringify(logInUser)}; HttpOnly; SameSite=Lax; Path=/`,
               "Content-Type": "application/json",
             });
-
-            // You can still return the user object (without tokens) if the UI needs it
             response.end(JSON.stringify({ message: "Login successful" }));
           } else if (pathNames[3] === "oauth" && pathNames[4] === "google") {
             if (pathNames[5] === "login") {

@@ -3,6 +3,6 @@ CREATE TABLE IF NOT EXISTS feedback (
     user_id    UUID REFERENCES users(id) ON DELETE SET NULL,
     blog_id    UUID REFERENCES blogs(id) ON DELETE SET NULL,     -- optional
     content    TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

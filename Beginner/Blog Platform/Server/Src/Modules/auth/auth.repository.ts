@@ -1,6 +1,10 @@
 import type { PoolClient, QueryResult } from "pg";
 import type { Database } from "../../Config/Database.js";
-import { refreshAccessToken, type Token } from "../../../Utils/Jwt.js";
+import {
+  refreshAccessToken,
+  verifyRefreshToken,
+  type Token,
+} from "../../../Utils/Jwt.js";
 import { Warning } from "../../../Utils/Logger.js";
 import type { User } from "../users/user.types.js";
 import type {
@@ -12,7 +16,6 @@ import type {
   VerificationCode,
 } from "./auth.types.js";
 import { codeHash, compareHash, passwordHash } from "../../../Utils/Hash.js";
-import { VCodeGenerator } from "../../../Utils/GenerateCode.js";
 
 export class AuthRepo implements AuthRepository {
   constructor(private dbClient: Database) {}
@@ -105,7 +108,7 @@ export class AuthRepo implements AuthRepository {
         await this.dbClient.transaction(
           async (client: PoolClient) =>
             await client.query(
-              "INSERT INTO verification_codes(user_id,code) VALUES($1,$2)",
+              "INSERT INTO verification_codes(user_id,code) VALUES($1,$2) RETURNING *",
               [userId, hashedAuthCode],
             ),
         );
@@ -138,13 +141,12 @@ export class AuthRepo implements AuthRepository {
       const comparison = compareHash(code, verificationRecord.rows[0]!.code);
 
       if (comparison) {
-        const verificationBlock: QueryResult<VerificationCode> =
-          await this.dbClient.transaction(async (client: PoolClient) => {
-            return await client.query(
-              "UPDATE users SET is_verified=true WHERE user_id=$1",
-              [userId],
-            );
-          });
+        await this.dbClient.transaction(async (client: PoolClient) => {
+          return await client.query(
+            "UPDATE users SET is_verified=true WHERE id=$1",
+            [userId],
+          );
+        });
 
         return true;
       } else return false;

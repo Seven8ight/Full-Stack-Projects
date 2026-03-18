@@ -7,9 +7,9 @@ import type { AuthRepo } from "./auth.repository.js";
 import type {
   AuthServ,
   loginUserDTO,
+  PublicVerificationCode,
   registerUserDTO,
   Session,
-  VerificationCode,
 } from "./auth.types.js";
 
 export class AuthService implements AuthServ {
@@ -28,7 +28,10 @@ export class AuthService implements AuthServ {
     userData: registerUserDTO,
     type: "legacy" | "oauth",
     oauthProvider?: string,
-  ): Promise<Tokens> {
+  ): Promise<{
+    userTokens: Tokens;
+    verificationBlock?: PublicVerificationCode;
+  }> {
     try {
       if (!userData.email || !userData.username || !userData.password)
         throw new Error("Email, username and password should be provided");
@@ -54,7 +57,7 @@ export class AuthService implements AuthServ {
 
         const userverificationCode = VCodeGenerator();
 
-        await this.generateAuthCodeForVerification(
+        const verificationBlock = await this.generateAuthCodeForVerification(
           newUser.id,
           userverificationCode,
         );
@@ -62,10 +65,14 @@ export class AuthService implements AuthServ {
 
         await this.authRepo.createSession({
           ...userData,
+          user_id: newUser.id,
           refreshToken: newUserTokens.refreshToken,
         });
 
-        return newUserTokens;
+        return {
+          userTokens: newUserTokens,
+          verificationBlock: verificationBlock,
+        };
       } else {
         let newUserData = {
           ...userData,
@@ -79,7 +86,7 @@ export class AuthService implements AuthServ {
           ),
           newUserTokens = generateToken(this.createPublicUser(newUser));
 
-        return newUserTokens;
+        return { userTokens: newUserTokens };
       }
     } catch (error) {
       throw error;
@@ -167,10 +174,11 @@ export class AuthService implements AuthServ {
 
     try {
       const verificationIdentifier =
-          await this.authRepo.generateAuthCodeForVerification(userId, authCode),
-        { code, ...publicVerficicationBlock } = verificationIdentifier;
+        await this.authRepo.generateAuthCodeForVerification(userId, authCode);
 
-      return { ...publicVerficicationBlock };
+      const { code, ...publicVerficationBlock } = verificationIdentifier;
+
+      return { ...publicVerficationBlock };
     } catch (error) {
       throw error;
     }
