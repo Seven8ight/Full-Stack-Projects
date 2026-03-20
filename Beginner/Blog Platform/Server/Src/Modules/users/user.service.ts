@@ -43,12 +43,13 @@ export class UserService implements Userservice {
     }
 
     try {
-      const editUser: User = await this.userRepo.editUser(
-        userId,
-        filteredUserData,
-      );
-
-      return this.createPublicUser(editUser);
+      if (Object.keys(filteredUserData).length > 0) {
+        const editUser: User = await this.userRepo.editUser(
+          userId,
+          filteredUserData,
+        );
+        return this.createPublicUser(editUser);
+      } else throw new Error("Nothing to update");
     } catch (error) {
       Warning("Error at user service");
       throw error;

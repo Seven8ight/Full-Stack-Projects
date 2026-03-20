@@ -347,9 +347,11 @@ export const AuthController = (
               response.end();
             } else {
               response.writeHead(400);
-              response.end({
-                error: "Verification code is invalid",
-              });
+              response.end(
+                JSON.stringify({
+                  error: "Verification code is invalid",
+                }),
+              );
             }
           } else if (type == "resend") {
             const authCode = VCodeGenerator();

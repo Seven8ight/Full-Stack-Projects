@@ -12,12 +12,13 @@ export type createFeedbackDTO = Omit<
   "id" | "created_at" | "deleted_at"
 >;
 export type updateFeedbackDTO =
-  | (Pick<Feedback, "id" | "user_id"> & Partial<Feedback>)
-  | Omit<Feedback, "created_at" | "blog_id">;
+  | (Pick<Feedback, "id" | "blog_id" | "user_id"> & Partial<Feedback>)
+  | Omit<Feedback, "created_at">;
 
 export interface FeedbackRepository {
   createFeedback: (feedbackData: createFeedbackDTO) => Promise<Feedback>;
   editFeedback: (feedbackData: updateFeedbackDTO) => Promise<Feedback>;
+  getBlogFeedback: (blogId: string) => Promise<Feedback[]>;
   getFeedbackByUserId: (userId: string) => Promise<Feedback[]>;
   deleteFeedback: (feedbackId: string) => Promise<void>;
 }
@@ -31,6 +32,7 @@ export interface FeedbackService {
     userId: string,
     feedbackData: updateFeedbackDTO,
   ) => Promise<Feedback>;
+  getBlogFeedback: (blogId: string) => Promise<Feedback[]>;
   getFeedbackByUserId: (userId: string) => Promise<Feedback[]>;
   deleteFeedback: (feedbackId: string) => Promise<void>;
 }

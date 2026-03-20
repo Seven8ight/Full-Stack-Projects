@@ -5,7 +5,11 @@ import { CommentRepository } from "./comment.repository.js";
 import { CommentServ } from "./comment.service.js";
 import type { CommentService } from "./comment.types.js";
 import type { PublicUser } from "../users/user.types.js";
-import { getResource, setResource } from "../../Config/Cache.js";
+import {
+  expireResource,
+  getResource,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const CommentController = (
   database: Database,
@@ -31,13 +35,23 @@ export const CommentController = (
 
       switch (request.method) {
         case "GET":
+          if (!parsedReqBody.blog_id) {
+            response.writeHead(404);
+            response.end(
+              JSON.stringify({
+                error: "Provide blog id in body",
+              }),
+            );
+            return;
+          }
+
           const commentsInCache = await getResource(
             `comments:${parsedReqBody.blog_id}`,
           );
           let responseBody: any;
 
           if (!commentsInCache) {
-            const blogComments = commentService.getBlogComments(
+            const blogComments = await commentService.getBlogComments(
               parsedReqBody.blog_id,
             );
 
@@ -46,6 +60,7 @@ export const CommentController = (
               blogComments,
               "other",
             );
+            responseBody = blogComments;
           } else responseBody = commentsInCache;
 
           response.writeHead(200, {
@@ -72,6 +87,8 @@ export const CommentController = (
             parsedReqBody,
           );
 
+          await expireResource(`comments:${patchedComment.blog_id}`, 1);
+
           response.writeHead(200, {
             "content-type": "application/json",
           });
@@ -84,6 +101,8 @@ export const CommentController = (
 
           if (type == "one") {
             await commentService.deleteComment(parsedReqBody.id, user.id);
+
+            await expireResource(`comments:${parsedReqBody.blog_id}`, 1);
 
             response.writeHead(204);
             response.end();

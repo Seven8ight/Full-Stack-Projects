@@ -4,13 +4,20 @@ import { verifyUser } from "../../Middleware/Authentication.js";
 import type { PublicUser } from "../users/user.types.js";
 import { FeedbackRepo } from "./feedback.repository.js";
 import { FeedbackServ } from "./feedback.service.js";
+import { BlogServ } from "../blogs/blog.service.js";
+import {
+  expireResource,
+  getResource,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const FeedbackController = (
   database: Database,
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>,
 ) => {
-  let unparsedReqBody: string = "";
+  let requestUrl = new URL(request.url!, `http://${request.headers.host}`),
+    unparsedReqBody: string = "";
 
   request.on("data", (data: Buffer) => (unparsedReqBody += data.toString()));
 
@@ -25,6 +32,67 @@ export const FeedbackController = (
 
       switch (request.method) {
         case "GET":
+          const searchParams = requestUrl.searchParams,
+            type = searchParams.get("type");
+
+          if (type == "blog") {
+            const blogId = parsedReqBody.blog_id;
+
+            if (!blogId) {
+              response.writeHead(404, {
+                "content-type": "application/json",
+              });
+              response.end(
+                JSON.stringify({
+                  error: "Blog id not provided",
+                }),
+              );
+
+              return;
+            }
+
+            const blogFeedbackInCache = await getResource(`feedback:${blogId}`);
+            let responseBody;
+
+            if (!blogFeedbackInCache) {
+              const blogFeedback = await feedbackServ.getBlogFeedback(blogId);
+
+              await setResource(`feedback:${blogId}`, blogFeedback, "other");
+
+              responseBody = blogFeedback;
+            } else responseBody = blogFeedbackInCache;
+
+            response.writeHead(200, {
+              "content-type": "application/json",
+            });
+            response.end(JSON.stringify(responseBody));
+          } else if (type == "user") {
+            const userId = user.id;
+            let responseBody: any;
+
+            const userFeedbackInCache = await getResource(
+              `user_feedback:${userId}`,
+            );
+
+            if (!userFeedbackInCache) {
+              const userFeedback =
+                await feedbackServ.getFeedbackByUserId(userId);
+
+              await setResource(
+                `user_feedback:${userId}`,
+                userFeedback,
+                "other",
+              );
+
+              responseBody = userFeedback;
+            } else responseBody = userFeedbackInCache;
+
+            response.writeHead(200, {
+              "content-type": "application/json",
+            });
+            response.end(JSON.stringify(responseBody));
+          }
+
           const retrieveComment = await feedbackServ.getFeedbackByUserId(
             user.id,
           );
@@ -52,6 +120,9 @@ export const FeedbackController = (
             user.id,
             parsedReqBody,
           );
+
+          await expireResource(`user_feedback:${user.id}`, 1);
+          await expireResource(`feedback:${parsedReqBody.blog_id}`, 1);
 
           response.writeHead(200, {
             "content-type": "application/json",

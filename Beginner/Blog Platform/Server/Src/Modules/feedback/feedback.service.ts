@@ -25,6 +25,16 @@ export class FeedbackServ implements FeedbackService {
     return true;
   }
 
+  async getBlogFeedback(blogId: string): Promise<Feedback[]> {
+    try {
+      const blogFeedback = await this.feedbackRepo.getBlogFeedback(blogId);
+
+      return blogFeedback;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async createFeedback(
     userId: string,
     feedbackData: createFeedbackDTO,
@@ -51,23 +61,25 @@ export class FeedbackServ implements FeedbackService {
     userId: string,
     feedbackData: updateFeedbackDTO,
   ): Promise<Feedback> {
-    if (!userId) throw new Error("User id not provided");
-
-    const allowedFields: string[] = ["id", "content"];
+    if (
+      !userId ||
+      !feedbackData.id ||
+      !feedbackData.blog_id ||
+      !feedbackData.content
+    )
+      throw new Error("Values not provided");
 
     try {
-      let newFeedbackData: Record<string, any> = { ...feedbackData };
+      let newFeedbackData: Record<string, any> = {};
 
-      for (let [key, value] of Object.entries(feedbackData)) {
-        if (!(key in allowedFields)) continue;
-        if (!value) throw new Error(`${key} has an undefined value`);
+      newFeedbackData.id = feedbackData.id;
+      newFeedbackData.user_id = userId;
+      newFeedbackData.blog_id = feedbackData.blog_id;
+      newFeedbackData.content = feedbackData.content;
 
-        newFeedbackData[key] = value;
-      }
-
-      feedbackData.user_id = userId;
-
-      const editRequest = await this.feedbackRepo.editFeedback(feedbackData);
+      const editRequest = await this.feedbackRepo.editFeedback(
+        newFeedbackData as updateFeedbackDTO,
+      );
 
       return editRequest;
     } catch (error) {

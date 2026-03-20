@@ -44,7 +44,7 @@ export class FeedbackRepo implements FeedbackRepository {
         paramIndex: number = 3;
 
       for (let [key, value] of Object.entries(feedbackData)) {
-        if (key != "user_id" && key != "blog_id") {
+        if (key != "id" && key != "user_id" && key != "blog_id") {
           keys.push(`${key}=$${paramIndex++}`);
           values.push(value);
         }
@@ -60,6 +60,19 @@ export class FeedbackRepo implements FeedbackRepository {
       );
 
       return patchFeedback.rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getBlogFeedback(blogId: string): Promise<Feedback[]> {
+    try {
+      const blogFeedback: QueryResult<Feedback> = await this.dbClient.query(
+        "SELECT * FROM feedback where blog_id=$1",
+        [blogId],
+      );
+
+      return blogFeedback.rows;
     } catch (error) {
       throw error;
     }

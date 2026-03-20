@@ -66,7 +66,7 @@ export class BlogServ implements BlogService {
       "cover_image_url",
       "status",
       "tags",
-      "media_urls",
+      "media",
       "view_count",
       "like_count",
     ];
@@ -100,7 +100,18 @@ export class BlogServ implements BlogService {
 
       return retrieveBlog;
     } catch (error) {
-      Warning(`Error at blog service`);
+      Warning(`Error at blog service, blog by id`);
+      throw error;
+    }
+  }
+
+  async getAllBlogs(): Promise<Blog[]> {
+    try {
+      const allBlogs = await this.blogRepo.getAllBlogs();
+
+      return allBlogs;
+    } catch (error) {
+      Warning(`Error at blog service, getting all blogs`);
       throw error;
     }
   }

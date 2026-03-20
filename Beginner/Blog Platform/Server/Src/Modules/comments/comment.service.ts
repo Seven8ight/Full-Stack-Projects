@@ -54,7 +54,12 @@ export class CommentServ implements CommentService {
 
       for (let [key, value] of Object.entries(commentData)) {
         if (key in this.allowedFields) continue;
-        if (!value) throw new Error(`${key} has no defined value`);
+        if (key == "like_count") {
+          if (!(typeof Number.parseInt(value) == "number"))
+            throw new Error("Like count only accepts numbers");
+        } else {
+          if (!value) throw new Error(`${key} has no defined value`);
+        }
 
         newCommentData[key] = value;
       }

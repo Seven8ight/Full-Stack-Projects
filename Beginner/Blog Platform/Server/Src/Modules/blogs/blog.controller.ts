@@ -67,11 +67,26 @@ export const BlogController = (
 
               if (!blogsInCache) {
                 const userBlogs = await blogService.getUserBlogs(user.id);
-
                 await setResource(`blog:${user.id}`, userBlogs, "other");
 
                 responseBody = userBlogs;
               } else responseBody = blogsInCache;
+
+              response.writeHead(200, {
+                "content-type": "application/json",
+              });
+              response.end(JSON.stringify(responseBody));
+            } else if (blogType == "all") {
+              const allBlogsInCache = await getResource("AllBlogs");
+              let responseBody: any;
+
+              if (!allBlogsInCache) {
+                const allBlogs = await blogService.getAllBlogs();
+
+                await setResource("AllBlogs", allBlogs, "other");
+
+                responseBody = allBlogs;
+              } else responseBody = allBlogsInCache;
 
               response.writeHead(200, {
                 "content-type": "application/json",
@@ -89,20 +104,45 @@ export const BlogController = (
             const tagType = searchParams.get("tagtype");
 
             if (tagType == "all") {
-              const tags = await blogService.getAllBlogTags();
+              const tagsInCache = await getResource("tags");
+              let responseBody: any;
+
+              if (!tagsInCache) {
+                const tags = await blogService.getAllBlogTags();
+                await setResource("tags", tags, "other");
+                responseBody = tags;
+              } else responseBody = tagsInCache;
 
               response.writeHead(200, {
                 "content-type": "application/json",
               });
-              response.end(JSON.stringify(tags));
+              response.end(JSON.stringify(responseBody));
             } else if (tagType == "one") {
-              const blogId = parsedReqBody.blog_id,
-                blogTags = await blogService.getBlogTagsByBlogId(blogId);
+              const blogId = parsedReqBody.blog_id;
+
+              const blogTagsInCache = await getResource(`blogtags:${blogId}`);
+              let responseBody: any;
+
+              if (blogTagsInCache) responseBody = blogTagsInCache;
+              else {
+                const blogTags = await blogService.getBlogTagsByBlogId(blogId);
+                await setResource(`blogtags:${blogId}`, blogTags, "other");
+                responseBody = blogTags;
+              }
 
               response.writeHead(200, {
                 "content-type": "application/json",
               });
-              response.end(JSON.stringify(blogTags));
+              response.end(JSON.stringify(responseBody));
+            } else {
+              response.writeHead(404, {
+                "content-type": "application/json",
+              });
+              response.end(
+                JSON.stringify({
+                  error: "Invalid tag type",
+                }),
+              );
             }
           } else {
             response.writeHead(404);
@@ -131,7 +171,7 @@ export const BlogController = (
         case "PATCH":
           const editBlog = await blogService.editBlog(parsedReqBody);
 
-          await setResource(`blog:${editBlog.id}`, editBlog, "other");
+          await expireResource(`blog:${editBlog.owner_id}`, 1);
 
           response.writeHead(201, {
             "content-type": "application/json",

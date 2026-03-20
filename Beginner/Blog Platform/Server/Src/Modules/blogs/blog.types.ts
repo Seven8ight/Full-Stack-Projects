@@ -2,11 +2,11 @@
 
 // --- Media type ---
 export type Media = {
-  id?: string;
+  id: string;
   url: string;
   type: "image" | "video";
   size: number;
-  created_at?: string;
+  created_at: string;
 };
 
 // --- Blog entity ---
@@ -37,18 +37,25 @@ export type BlogTag = {
 // --- DTOs ---
 export type createBlogDTO = Pick<
   Blog,
-  "owner_id" | "title" | "slug" | "content" | "cover_image_url" | "status"
+  | "id"
+  | "owner_id"
+  | "title"
+  | "slug"
+  | "content"
+  | "cover_image_url"
+  | "status"
 > & {
   tags?: string[];
   media?: Media[];
 };
 
 export type updateBlogDTO = Partial<createBlogDTO> & {
-  id: string;
   tags?: { action: "add" | "subtract"; tags: string[] };
   media?: { action: "add" | "subtract"; media: Media[] };
   deleted_at?: string;
 };
+
+export type createMediaDTO = Omit<Media, "id" | "created_at">;
 
 // --- Repository interface ---
 export interface BlogRepository {
@@ -56,6 +63,7 @@ export interface BlogRepository {
   editBlog: (blogId: string, newBlogData: updateBlogDTO) => Promise<Blog>;
   getBlogById: (blogId: string) => Promise<Blog>;
   getUserBlogs: (userId: string) => Promise<Blog[]>;
+  getAllBlogs: () => Promise<Blog[]>;
   getAllBlogTags: () => Promise<BlogTag[]>;
   getBlogTagsByBlogId: (blogId: string) => Promise<BlogTag[]>;
   deleteBlog: (blogId: string, userId: string) => Promise<void>;
@@ -68,6 +76,7 @@ export interface BlogService {
   editBlog: (newBlogData: updateBlogDTO) => Promise<Blog>;
   getBlogById: (blogId: string) => Promise<Blog>;
   getUserBlogs: (userId: string) => Promise<Blog[]>;
+  getAllBlogs: () => Promise<Blog[]>;
   getAllBlogTags: () => Promise<BlogTag[]>;
   getBlogTagsByBlogId: (blogId: string) => Promise<BlogTag[]>;
   deleteBlog: (blogId: string, userId: string) => Promise<void>;

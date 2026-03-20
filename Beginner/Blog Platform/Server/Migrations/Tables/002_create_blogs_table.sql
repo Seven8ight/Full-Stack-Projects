@@ -13,8 +13,6 @@ CREATE TABLE IF NOT EXISTS blogs (
     content         JSONB NOT NULL,
     cover_image_url TEXT,
     status          content_status DEFAULT 'draft',
-    tags            TEXT[] DEFAULT '{}',
-    media_urls      TEXT[] DEFAULT '{}',
     view_count      INT DEFAULT 0,
     like_count      INT DEFAULT 0,
     comment_count   INT DEFAULT 0,
@@ -28,4 +26,3 @@ CREATE TABLE IF NOT EXISTS blogs (
 CREATE INDEX idx_blogs_owner    ON blogs (owner_id);
 CREATE INDEX idx_blogs_status   ON blogs (status);
 CREATE INDEX idx_blogs_published ON blogs (published_at DESC) WHERE status = 'published';
-CREATE INDEX idx_blogs_tags_gin ON blogs USING GIN (tags);
