@@ -15,13 +15,16 @@ export class LikeRepo implements LikeRepository {
       let keys: string[] = Object.keys(likeData),
         values: string[] = Object.values(likeData),
         paramIndex: number = 1,
-        paramIndexing = Array.from({ length: 5 }, () => `$${paramIndex++}`);
+        paramIndexing = Array.from(
+          { length: keys.length },
+          () => `$${paramIndex++}`,
+        );
 
       const newLike: QueryResult<Like> = await this.dbClient.transaction(
         async (client: PoolClient) => {
           return await client.query(
-            `INSERT INTO likes(${keys.join(",")}) VALUES(${paramIndexing.join(",")})`,
-            [...values],
+            `INSERT INTO likes(${keys.join(",")}) VALUES(${paramIndexing.join(",")}) RETURNING *`,
+            values,
           );
         },
       );
@@ -36,20 +39,29 @@ export class LikeRepo implements LikeRepository {
     try {
       let keys: string[] = [],
         values: any[] = [],
-        paramIndex: number = 3;
+        paramIndex: number = 4;
 
       for (let [key, value] of Object.entries(likeData)) {
-        if (key != "user_id" && key != " blog_id" && key != "comment_id") {
+        if (
+          key != "id" &&
+          key != "user_id" &&
+          key != "blog_id" &&
+          key != "comment_id"
+        ) {
           keys.push(`${key}=$${paramIndex++}`);
           values.push(value);
         }
       }
 
+      const resourceId = likeData.blog_id
+        ? likeData.blog_id
+        : likeData.comment_id;
+
       const patchLike = await this.dbClient.transaction(
         async (client: PoolClient) => {
           return client.query(
-            `UPDATE likes SET ${keys.join(",")} WHERE id=$1 and user_id=$2 RETURNING *`,
-            [likeData.user_id, ...values],
+            `UPDATE likes SET ${keys.join(",")} WHERE id=$1 and user_id=$2 and ${likeData.comment_id ? "comment_id=$3" : "blog_id=$3"} RETURNING *`,
+            [likeData.id, likeData.user_id, resourceId, ...values],
           );
         },
       );
@@ -63,7 +75,7 @@ export class LikeRepo implements LikeRepository {
   async getLikesByBlogId(blogId: string): Promise<Like[]> {
     try {
       const retrieveLikes: QueryResult<Like> = await this.dbClient.query(
-        "SELECT * FROM likes WHERE blog_id",
+        "SELECT * FROM likes WHERE blog_id=$1",
         [blogId],
       );
 
@@ -76,7 +88,7 @@ export class LikeRepo implements LikeRepository {
   async getLikesByCommentId(commentId: string): Promise<Like[]> {
     try {
       const retrieveLikes: QueryResult<Like> = await this.dbClient.query(
-        "SELECT * FROM likes WHERE comment_id",
+        "SELECT * FROM likes WHERE comment_id=$1",
         [commentId],
       );
 

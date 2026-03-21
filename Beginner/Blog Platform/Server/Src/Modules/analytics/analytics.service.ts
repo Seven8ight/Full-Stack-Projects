@@ -18,6 +18,7 @@ export class AnalyticServ implements AnalyticService {
       throw error;
     }
   }
+
   async editAnalytic(
     blogId: string,
     analyticData: updateAnalyticDTO,
@@ -65,7 +66,7 @@ export class AnalyticServ implements AnalyticService {
   async getBlogAnalyticsByDate(
     blogId: string,
     selectedDate: string,
-  ): Promise<Analytic | Analytic[]> {
+  ): Promise<Analytic> {
     try {
       const blogAnalyticsByDate =
         await this.analyticRepo.getBlogAnalyticsByDate(blogId, selectedDate);

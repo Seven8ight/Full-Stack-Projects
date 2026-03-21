@@ -69,6 +69,16 @@ export const LikeController = async (
                 "other",
               );
             } else responseBody = commentsLikesInCache;
+          } else {
+            response.writeHead(404, {
+              "content-type": "application/json",
+            });
+            response.end(
+              JSON.stringify({
+                error: "Blog type not provided",
+              }),
+            );
+            return;
           }
 
           response.writeHead(200, {
@@ -83,7 +93,10 @@ export const LikeController = async (
           if (parsedReqBody.blog_id)
             await expireResource(`blog-likes:${parsedReqBody.blog_id}`, 1);
           else if (parsedReqBody.comment_id)
-            await expireResource(`comment-likes:${parsedReqBody.blog_id}`, 1);
+            await expireResource(
+              `comment-likes:${parsedReqBody.comment_id}`,
+              1,
+            );
 
           response.writeHead(201);
           response.end(JSON.stringify(newLike));
@@ -98,9 +111,12 @@ export const LikeController = async (
           if (parsedReqBody.blog_id)
             await expireResource(`blog-likes:${parsedReqBody.blog_id}`, 1);
           else if (parsedReqBody.comment_id)
-            await expireResource(`comment-likes:${parsedReqBody.blog_id}`, 1);
+            await expireResource(
+              `comment-likes:${parsedReqBody.comment_id}`,
+              1,
+            );
 
-          response.writeHead(201);
+          response.writeHead(200);
           response.end(JSON.stringify(patchedLike));
 
           break;

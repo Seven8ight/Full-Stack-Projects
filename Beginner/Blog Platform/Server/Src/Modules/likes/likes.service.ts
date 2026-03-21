@@ -35,10 +35,13 @@ export class LikeServ implements LikeService {
     if (!userId) throw new Error("User id must be provided");
 
     try {
-      if (!likeData.blog_id && !likeData.comment_id)
-        throw new Error("Blog or comment id must be provided");
+      if (!likeData.id || (!likeData.blog_id && !likeData.comment_id))
+        throw new Error("Like id and Blog or comment id must be provided");
 
-      const patchedLike: Like = await this.likeRepo.editLike(likeData);
+      const patchedLike: Like = await this.likeRepo.editLike({
+        ...likeData,
+        user_id: userId,
+      });
 
       return patchedLike;
     } catch (error) {

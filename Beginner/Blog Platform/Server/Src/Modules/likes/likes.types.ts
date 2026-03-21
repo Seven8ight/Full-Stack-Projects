@@ -1,4 +1,5 @@
 export type Like = {
+  id: string;
   user_id: string;
   blog_id: string;
   comment_id: string;
@@ -15,7 +16,7 @@ export type createLikeDTO = {
   | { blog_id: string; comment_id?: never }
   | { comment_id: string; blog_id?: never }
 );
-export type updateLikeDTO = Pick<Like, "user_id"> &
+export type updateLikeDTO = Pick<Like, "id" | "user_id"> &
   (
     | { blog_id: string; comment_id?: never }
     | { comment_id: string; blog_id?: never }

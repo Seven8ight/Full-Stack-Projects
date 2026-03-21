@@ -19,7 +19,7 @@ export interface AnalyticRepository {
   getBlogAnalyticsByDate: (
     blogId: string,
     selectedDate: string,
-  ) => Promise<Analytic | Analytic[]>;
+  ) => Promise<Analytic>;
 }
 export interface AnalyticService {
   createAnalytic: (blogId: string) => Promise<Analytic>;
@@ -31,5 +31,5 @@ export interface AnalyticService {
   getBlogAnalyticsByDate: (
     blogId: string,
     selectedDate: string,
-  ) => Promise<Analytic | Analytic[]>;
+  ) => Promise<Analytic>;
 }

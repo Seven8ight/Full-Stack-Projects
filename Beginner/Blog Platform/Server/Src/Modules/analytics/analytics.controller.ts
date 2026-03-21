@@ -2,7 +2,11 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Database } from "../../Config/Database.js";
 import { AnalyticsRepo } from "./analytics.repository.js";
 import { AnalyticServ } from "./analytics.service.js";
-import { getResource, setResource } from "../../Config/Cache.js";
+import {
+  expireResource,
+  getResource,
+  setResource,
+} from "../../Config/Cache.js";
 
 export const AnalyticsController = async (
   database: Database,
@@ -101,6 +105,9 @@ export const AnalyticsController = async (
             parsedReqBody.blog_id,
             parsedReqBody,
           );
+
+          await expireResource(`Id-analytics:${parsedReqBody.blog_id}`, 1);
+          await expireResource(`Date-analytics:${parsedReqBody.blog_id}`, 1);
 
           response.writeHead(200);
           response.end(JSON.stringify(patchAnalytics));
