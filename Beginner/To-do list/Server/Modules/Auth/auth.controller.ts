@@ -114,19 +114,6 @@ export const AuthController = (
 
               googleTokenRequest.write(postData);
               googleTokenRequest.end();
-            } else if (pathNames[4] == "me") {
-              const rawCookie = request.headers.cookie,
-                tokenCookie = rawCookie?.split("tokens=")[1]?.split(";")[0],
-                tokens = JSON.parse(decodeURIComponent(tokenCookie!));
-
-              response.writeHead(200);
-              response.end(
-                JSON.stringify({
-                  accessToken: tokens.accessToken,
-                  refreshToken: tokens.refreshToken,
-                }),
-              );
-              break;
             } else if (pathNames[4] == "mobile") {
               const oauthUser: createUserDTO = {
                   username: parsedRequestBody.name,
@@ -277,6 +264,18 @@ export const AuthController = (
           }
 
           break;
+        case "me":
+          const rawCookie = request.headers.cookie,
+            tokenCookie = rawCookie?.split("tokens=")[1]?.split(";")[0],
+            tokens = JSON.parse(decodeURIComponent(tokenCookie!));
+
+          response.writeHead(200);
+          response.end(
+            JSON.stringify({
+              accessToken: tokens.accessToken,
+              refreshToken: tokens.refreshToken,
+            }),
+          );
         case "refresh":
           if (request.method != "POST") {
             response.writeHead(405);

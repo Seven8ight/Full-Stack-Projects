@@ -48,11 +48,12 @@ const DashboardContent = () => {
       (async () => {
         try {
           const res = await fetch(
-            "https://task-tracker-production-227e.up.railway.app/api/auth/login/google/me",
+            "https://task-tracker-production-227e.up.railway.app/api/auth/me",
             {
               credentials: "include",
             },
           );
+          console.log(await res.json());
           const { accessToken, refreshToken } = await res.json();
 
           localStorage.setItem("accessToken", accessToken!);
