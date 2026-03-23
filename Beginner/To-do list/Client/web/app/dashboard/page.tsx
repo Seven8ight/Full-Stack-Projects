@@ -53,7 +53,7 @@ const DashboardContent = () => {
               credentials: "include",
             },
           );
-          console.log(await res.json());
+
           const { accessToken, refreshToken } = await res.json();
 
           localStorage.setItem("accessToken", accessToken!);

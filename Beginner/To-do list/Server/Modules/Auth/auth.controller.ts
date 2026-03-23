@@ -104,7 +104,7 @@ export const AuthController = (
                       response.writeHead(302, {
                         location:
                           "https://task-flow-s8.up.railway.app/dashboard?oauth=google",
-                        "set-cookie": `tokens=${JSON.stringify(encryptedGoogleUser)}; HttpOnly; SameSite=Lax; Path=/`,
+                        "set-cookie": `tokens=${JSON.stringify(encryptedGoogleUser)}; HttpOnly; SameSite=None; Path=/`,
                       });
                       response.end();
                     }
@@ -216,7 +216,7 @@ export const AuthController = (
                       response.writeHead(302, {
                         location:
                           "https://task-flow-s8.up.railway.app/dashboard?oauth=google",
-                        "set-cookie": `tokens=${JSON.stringify(encryptedGoogleUser)}; HttpOnly; SameSite=Lax; Path=/`,
+                        "set-cookie": `tokens=${JSON.stringify(encryptedGoogleUser)}; HttpOnly; SameSite=None; Path=/`,
                       });
                       response.end();
                     }
