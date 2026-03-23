@@ -48,7 +48,7 @@ const DashboardContent = () => {
       (async () => {
         try {
           const res = await fetch(
-            "https://task-tracker-production-227e.up.railway.app/api/auth/me",
+            "https://task-tracker-production-227e.up.railway.app/api/auth/login/google/me",
             {
               credentials: "include",
             },
