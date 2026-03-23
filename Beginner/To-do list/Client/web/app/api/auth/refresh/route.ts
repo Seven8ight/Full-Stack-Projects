@@ -16,7 +16,7 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const refreshTokenRequest: Response = await fetch(
-        "https://task-tracker-s8.up.railway.app/api/auth/refresh",
+        "https://task-tracker-production-227e.up.railway.app/api/auth/refresh",
         {
           method: "POST",
           headers: {

@@ -43,31 +43,26 @@ const DashboardContent = () => {
 
   const router = useRouter();
 
-  // --- OAuth Logic ---
   useEffect(() => {
     if (oauth === "google") {
       (async () => {
         try {
-          const fetchProfile = await fetch("/api/auth/google", {
-            method: "GET",
-            credentials: "include",
-          });
-          const fetchResponse = await fetchProfile.json();
+          const res = await fetch(
+            "https://task-tracker-production-227e.up.railway.app/api/auth/me",
+            {
+              credentials: "include",
+            },
+          );
+          const { accessToken, refreshToken } = await res.json();
 
-          if (!fetchProfile.ok) {
-            toast.error("Google login failed. Try again");
-            setTimeout(() => router.push("/auth/login"), 2500);
-            return;
-          }
+          localStorage.setItem("accessToken", accessToken!);
+          localStorage.setItem("refreshToken", refreshToken!);
 
           toast.success("Google login successful");
+
           const newParams = new URLSearchParams(searchParams.toString());
           newParams.delete("oauth");
           router.replace(`${window.location.pathname}?${newParams.toString()}`);
-
-          localStorage.clear();
-          localStorage.setItem("accessToken", fetchResponse.accessToken);
-          localStorage.setItem("refreshToken", fetchResponse.refreshToken);
         } catch (err) {
           toast.error("Internal connection error");
         }
@@ -75,7 +70,6 @@ const DashboardContent = () => {
     }
   }, [oauth, router, searchParams]);
 
-  // --- Counter Logic ---
   useEffect(() => {
     setTTasks(() => {
       const today = new Date().getDate();

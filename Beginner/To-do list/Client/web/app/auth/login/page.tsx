@@ -86,7 +86,7 @@ const Login = (): React.ReactNode => {
 
   const googleOauth = () =>
     (window.location.href =
-      "https://task-tracker-s8.up.railway.app/api/auth/login/google/login");
+      "https://task-tracker-production-227e.up.railway.app/api/auth/login/google/login");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50/50 p-4 dark:bg-zinc-950">

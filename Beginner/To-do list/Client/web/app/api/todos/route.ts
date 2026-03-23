@@ -19,7 +19,7 @@ export const GET = async (request: NextRequest) => {
 
     if (type == "all") {
       const fetchAllTodosRequest = await fetch(
-          "https://task-tracker-s8.up.railway.app/api/todos/get?type=all",
+          "https://task-tracker-production-227e.up.railway.app/api/todos/get?type=all",
           {
             method: "GET",
             headers: {
