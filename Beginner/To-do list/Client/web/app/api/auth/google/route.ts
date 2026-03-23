@@ -1,13 +1,10 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async (request: NextRequest) => {
-  console.log("Called");
+export const GET = async (_: NextRequest) => {
   const requestCookies = await cookies(),
     oauthToken = requestCookies.get("tokens");
 
-  console.log(typeof oauthToken?.value);
-  console.log(oauthToken?.value);
   if (!oauthToken)
     return NextResponse.json(
       {

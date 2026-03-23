@@ -15,7 +15,7 @@ export const POST = async (request: NextRequest) => {
       );
 
     const loginRequest: Response = await fetch(
-        "http://localhost:4000/api/auth/login/legacy",
+        "https://task-tracker-s8.up.railway.app/api/auth/login/legacy",
         {
           method: "POST",
           body: JSON.stringify(requestBody),

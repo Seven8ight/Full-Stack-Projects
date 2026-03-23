@@ -15,7 +15,7 @@ export const GET = async (request: NextRequest) => {
 
   try {
     const profileRetrieval: Response = await fetch(
-        "http://localhost:4000/api/users/get",
+        "https://task-tracker-s8.up.railway.app/api/users/get",
         {
           method: "GET",
           headers: {

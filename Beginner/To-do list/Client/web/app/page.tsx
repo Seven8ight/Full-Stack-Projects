@@ -9,9 +9,14 @@ import {
   MousePointerClick,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import PlaceHolderImage from "../public/Page-look.png";
+import { useRouter } from "next/navigation";
 
 const LandingPage = () => {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 overflow-hidden">
       {/* --- Navigation --- */}
@@ -58,18 +63,18 @@ const LandingPage = () => {
             interface.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              size="lg"
-              className="h-14 px-8 text-lg rounded-2xl w-100 sm:w-auto gap-2 group"
-            >
-              <Link href={"/auth/signup"}>
-                Start for free{" "}
+            <Link href="/auth/signup">
+              <Button
+                size="lg"
+                className="h-14 px-8 text-lg rounded-2xl w-full sm:w-auto gap-2 group"
+              >
+                Start for free
                 <ChevronRight
                   size={20}
                   className="group-hover:translate-x-1 transition-transform"
                 />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -77,11 +82,22 @@ const LandingPage = () => {
 
         <div className="container mx-auto mt-20 relative">
           <div className="relative mx-auto max-w-5xl rounded-2xl border shadow-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 p-2 animate-in zoom-in-95 duration-1000">
-            <div className="rounded-xl border bg-white dark:bg-zinc-900 h-100 md:h-150 w-full shadow-inner flex items-center justify-center text-zinc-400 font-medium">
-              {/* You can put a screenshot of your actual app here */}
-              App Preview Placeholder
+            {/* Image container with inner border */}
+            <div className="rounded-xl border bg-white dark:bg-zinc-900 h-100 md:h-150 w-full shadow-inner flex items-center justify-center text-zinc-400 font-medium p-4">
+              <div className="w-full h-full flex items-center justify-center border border-zinc-300 dark:border-zinc-700 rounded-lg overflow-hidden">
+                <Image
+                  src={PlaceHolderImage}
+                  alt="Placeholder image of the app"
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "100%",
+                  }}
+                />
+              </div>
             </div>
           </div>
+
           {/* Decorative gradients */}
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-zinc-200 dark:bg-zinc-800/50 rounded-full blur-[100px] -z-10" />
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-zinc-200 dark:bg-zinc-800/50 rounded-full blur-[100px] -z-10" />
@@ -143,6 +159,7 @@ const LandingPage = () => {
               size="lg"
               variant="secondary"
               className="h-14 px-10 text-lg rounded-2xl font-bold"
+              onClick={() => router.push("/auth/signup")}
             >
               Join TaskFlow Today
             </Button>

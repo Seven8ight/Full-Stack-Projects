@@ -7,7 +7,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useState } from "react";
-import { Mail, Lock, LogIn } from "lucide-react"; // Icons for a modern touch
+import { Mail, Lock, LogIn } from "lucide-react";
 
 type details = {
   email: string;
@@ -15,7 +15,6 @@ type details = {
 };
 
 const Login = (): React.ReactNode => {
-  // --- Retained Logic & State ---
   const [details, setDetails] = useState<details>({
       email: "",
       password: "",
@@ -87,7 +86,7 @@ const Login = (): React.ReactNode => {
 
   const googleOauth = () =>
     (window.location.href =
-      "http://localhost:4000/api/auth/login/google/login");
+      "https://task-tracker-s8.up.railway.app/api/auth/login/google/login");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50/50 p-4 dark:bg-zinc-950">

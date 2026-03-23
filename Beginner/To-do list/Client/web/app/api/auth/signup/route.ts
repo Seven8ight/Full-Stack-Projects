@@ -5,7 +5,7 @@ export const POST = async (request: Request) => {
     const body = await request.json();
 
     const postRequest: Response = await fetch(
-        "http://localhost:4000/api/auth/register/legacy",
+        "https://task-tracker-s8.up.railway.app/api/auth/register/legacy",
         {
           method: "POST",
           headers: {

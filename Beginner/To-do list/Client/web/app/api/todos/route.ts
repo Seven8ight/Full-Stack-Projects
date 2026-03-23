@@ -19,7 +19,7 @@ export const GET = async (request: NextRequest) => {
 
     if (type == "all") {
       const fetchAllTodosRequest = await fetch(
-          "http://localhost:4000/api/todos/get?type=all",
+          "https://task-tracker-s8.up.railway.app/api/todos/get?type=all",
           {
             method: "GET",
             headers: {
@@ -56,7 +56,7 @@ export const GET = async (request: NextRequest) => {
         );
 
       const fetchTodoRequest = await fetch(
-          `http://localhost:4000/api/todos/get?type=one&todoid=${todoId}`,
+          `https://task-tracker-s8.up.railway.app/api/todos/get?type=one&todoid=${todoId}`,
           {
             method: "GET",
             headers: {
@@ -119,7 +119,7 @@ export const POST = async (request: NextRequest) => {
     const todoBody = await request.json();
 
     const createTodoRequest: Response = await fetch(
-        "http://localhost:4000/api/todos/create",
+        "https://task-tracker-s8.up.railway.app/api/todos/create",
         {
           method: "POST",
           headers: {
@@ -173,7 +173,7 @@ export const PATCH = async (request: NextRequest) => {
     const todoBody = await request.json();
 
     const updateTodoRequest: Response = await fetch(
-        "http://localhost:4000/api/todos/edit",
+        "https://task-tracker-s8.up.railway.app/api/todos/edit",
         {
           method: "PATCH",
           headers: {
@@ -229,7 +229,7 @@ export const DELETE = async (request: NextRequest) => {
     const todoId = searchParams.get("todoid");
     console.log(todoId);
     const deleteTodoRequest: Response = await fetch(
-        `http://localhost:4000/api/todos/delete?type=one&todoid=${todoId}`,
+        `https://task-tracker-s8.up.railway.app/api/todos/delete?type=one&todoid=${todoId}`,
         {
           method: "DELETE",
           headers: {

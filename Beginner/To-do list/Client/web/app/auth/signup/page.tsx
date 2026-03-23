@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 const Signup = (): React.ReactNode => {
   const router = useRouter();
 
-  // --- Logic & State (Strictly Retained) ---
   const [username, setUsername] = useState<string>(""),
     [email, setEmail] = useState<string>(""),
     [password, setPassword] = useState<string>(""),
@@ -99,7 +98,7 @@ const Signup = (): React.ReactNode => {
 
   const googleOauthHandler = () =>
     (window.location.href =
-      "http://localhost:4000/api/auth/register/google/signup");
+      "https://task-tracker-s8.up.railway.app/api/auth/signup/google/signup");
 
   useEffect(() => {
     if (errorMsg.length > 0) {
