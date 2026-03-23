@@ -17,6 +17,7 @@ export default function Router(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, X-Requested-With",
   );
+  response.setHeader("access-control-allow-credentials", "true");
   response.setHeader("Access-Control-Max-Age", "86400");
 
   if (request.method == "OPTIONS") {
@@ -25,6 +26,7 @@ export default function Router(
       "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
       "Access-Control-Allow-Headers":
         "Content-Type, Authorization, X-Requested-With",
+      "access-control-allow-credentials": "true",
     });
     return response.end();
   }
