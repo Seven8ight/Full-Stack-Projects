@@ -88,4 +88,5 @@ export interface AuthServ {
     userId: string,
     code: string,
   ) => Promise<boolean>;
+  retrieveSessions(userId: string): Promise<Session | Session[]>;
 }

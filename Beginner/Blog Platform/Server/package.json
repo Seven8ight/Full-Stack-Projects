@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "migrations": "npx tsx ./Migrations/Migrations.ts",
     "server": "npx tsx --watch Server.ts"
   },
@@ -24,7 +24,8 @@
     "@types/redis": "^4.0.10",
     "@types/socket.io": "^3.0.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "@types/amqp": "^0.2.9",
