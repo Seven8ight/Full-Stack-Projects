@@ -268,7 +268,7 @@ export const AuthController = (
           const rawCookie = request.headers.cookie,
             tokenCookie = rawCookie?.split("tokens=")[1]?.split(";")[0],
             tokens = JSON.parse(decodeURIComponent(tokenCookie!));
-
+          console.log(tokens);
           response.writeHead(200);
           response.end(
             JSON.stringify({
