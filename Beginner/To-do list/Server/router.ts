@@ -5,7 +5,10 @@ export default function Router(
   request: IncomingMessage,
   response: ServerResponse<IncomingMessage>,
 ) {
-  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://task-flow-s8.up.railway.app",
+  );
   response.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PATCH, DELETE, OPTIONS",
@@ -18,7 +21,7 @@ export default function Router(
 
   if (request.method == "OPTIONS") {
     response.writeHead(204, {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://task-flow-s8.up.railway.app",
       "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
       "Access-Control-Allow-Headers":
         "Content-Type, Authorization, X-Requested-With",
