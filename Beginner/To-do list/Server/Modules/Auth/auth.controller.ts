@@ -265,10 +265,31 @@ export const AuthController = (
 
           break;
         case "me":
-          const rawCookie = request.headers.cookie,
-            tokenCookie = rawCookie?.split("tokens=")[1]?.split(";")[0],
-            tokens = JSON.parse(decodeURIComponent(tokenCookie!));
-          console.log(tokens);
+          const rawCookie = request.headers.cookie;
+
+          console.log("Raw cookie:", rawCookie); // check what's actually coming in
+
+          if (!rawCookie) {
+            response.writeHead(404);
+            response.end(JSON.stringify({ error: "No cookies found" }));
+            break;
+          }
+
+          const cookieMap = Object.fromEntries(
+            rawCookie.split(";").map((c) => {
+              const [key, ...val] = c.trim().split("=");
+              return [key, val.join("=")];
+            }),
+          );
+
+          if (!cookieMap.tokens) {
+            response.writeHead(404);
+            response.end(JSON.stringify({ error: "Tokens cookie not found" }));
+            break;
+          }
+
+          const tokens = JSON.parse(decodeURIComponent(cookieMap.tokens));
+
           response.writeHead(200);
           response.end(
             JSON.stringify({
@@ -276,6 +297,7 @@ export const AuthController = (
               refreshToken: tokens.refreshToken,
             }),
           );
+          break;
         case "refresh":
           if (request.method != "POST") {
             response.writeHead(405);
