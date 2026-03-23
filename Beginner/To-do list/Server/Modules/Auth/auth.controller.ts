@@ -162,9 +162,8 @@ export const AuthController = (
             response.writeHead(201);
             return response.end(JSON.stringify(loginLegacyUser));
           } else if (pathNames[3] == "google") {
+            console.log(GOOGLE_LOGIN_REDIRECT_URI);
             if (pathNames[4] == "login") {
-              console.log(GOOGLE_CLIENT_ID);
-              console.log(GOOGLE_LOGIN_REDIRECT_URI);
               response.writeHead(301, {
                 location: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_LOGIN_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent`,
               });
