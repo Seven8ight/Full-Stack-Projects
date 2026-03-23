@@ -98,7 +98,7 @@ const Signup = (): React.ReactNode => {
 
   const googleOauthHandler = () =>
     (window.location.href =
-      "https://task-tracker-s8.up.railway.app/api/auth/signup/google/signup");
+      "https://task-tracker-s8.up.railway.app/api/auth/register/google/signup");
 
   useEffect(() => {
     if (errorMsg.length > 0) {
