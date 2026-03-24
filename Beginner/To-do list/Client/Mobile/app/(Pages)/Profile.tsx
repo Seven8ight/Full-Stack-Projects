@@ -83,7 +83,7 @@ const ProfilePage = () => {
 
       try {
         const updateRequest = await fetch(
-            "http://192.168.0.12:4000/api/users/edit",
+            "https://task-tracker-production-227e.up.railway.app/api/users/edit",
             {
               method: "PATCH",
               headers: {

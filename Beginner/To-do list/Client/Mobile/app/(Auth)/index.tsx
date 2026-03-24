@@ -17,8 +17,7 @@ import AnimatedRN, {
   withTiming,
 } from "react-native-reanimated";
 
-const { width } = Dimensions.get("window"),
-  cardWidth = width * 0.85;
+const { width } = Dimensions.get("window");
 
 const DATA = [
   {

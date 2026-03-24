@@ -125,8 +125,8 @@ const AuthScreen = () => {
 
         const url =
           page === "login"
-            ? "http://192.168.0.12:4000/api/auth/login/legacy"
-            : "http://192.168.0.12:4000/api/auth/register/legacy";
+            ? "https://task-tracker-production-227e.up.railway.app/api/auth/login/legacy"
+            : "https://task-tracker-production-227e.up.railway.app/api/auth/register/legacy";
 
         authenticationRequest = await fetch(url, {
           method: "POST",
@@ -170,7 +170,7 @@ const AuthScreen = () => {
           const { user } = response.data;
 
           const googleStorage: Response = await fetch(
-              `http://192.168.0.12:4000/api/auth/${type == "signup" ? "register" : "login"}/google/mobile`,
+              `https://task-tracker-production-227e.up.railway.app/api/auth/${type == "signup" ? "register" : "login"}/google/mobile`,
               {
                 method: "POST",
                 headers: {
@@ -214,7 +214,11 @@ const AuthScreen = () => {
                 "Google play services not available",
               );
               break;
+            case statusCodes.SIGN_IN_REQUIRED:
+              triggerToast("error", "Error", "Google sign in required");
+              break;
             default:
+              console.log(error);
               triggerToast("error", "Error", "Unknown error");
               break;
           }
@@ -240,7 +244,7 @@ const AuthScreen = () => {
         });
 
         const userStorageRequest: Response = await fetch(
-            "http://192.168.0.12:4000/api/auth/register/apple/mobile",
+            "https://task-tracker-production-227e.up.railway.app/api/auth/register/apple/mobile",
             {
               method: "POST",
             },

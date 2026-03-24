@@ -270,7 +270,7 @@ const TasksScreen = () => {
         }
 
         const taskCreation: Response = await fetch(
-            "http://192.168.0.12:4000/api/todos/create",
+            "https://task-tracker-production-227e.up.railway.app/api/todos/create",
             {
               method: "POST",
               headers: {
@@ -325,7 +325,7 @@ const TasksScreen = () => {
 
       try {
         const updateRequest: Response = await fetch(
-            "http://192.168.0.12:4000/api/todos/edit",
+            "https://task-tracker-production-227e.up.railway.app/api/todos/edit",
             {
               method: "PATCH",
               headers: {
@@ -374,7 +374,7 @@ const TasksScreen = () => {
     deleteTask = async (taskId: string) => {
       try {
         const deleteRequest = await fetch(
-          `http://192.168.0.12:4000/api/todos/delete?type=one&todoid=${taskId}`,
+          `https://task-tracker-production-227e.up.railway.app/api/todos/delete?type=one&todoid=${taskId}`,
           {
             method: "DELETE",
             headers: {

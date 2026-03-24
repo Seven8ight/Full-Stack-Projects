@@ -39,37 +39,23 @@ const DashboardContent = () => {
     [current, setCurrent] = useState<number>(0);
 
   const searchParams = useSearchParams(),
-    oauth = searchParams.get("oauth");
+    accessToken = searchParams.get("accessToken"),
+    refreshToken = searchParams.get("refreshToken");
 
   const router = useRouter();
 
   useEffect(() => {
-    if (oauth === "google") {
-      (async () => {
-        try {
-          const res = await fetch(
-            "https://task-tracker-production-227e.up.railway.app/api/auth/me",
-            {
-              credentials: "include",
-            },
-          );
+    if (accessToken && refreshToken) {
+      try {
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
 
-          const { accessToken, refreshToken } = await res.json();
-
-          localStorage.setItem("accessToken", accessToken!);
-          localStorage.setItem("refreshToken", refreshToken!);
-
-          toast.success("Google login successful");
-
-          const newParams = new URLSearchParams(searchParams.toString());
-          newParams.delete("oauth");
-          router.replace(`${window.location.pathname}?${newParams.toString()}`);
-        } catch (err) {
-          toast.error("Internal connection error");
-        }
-      })();
+        toast.success("Google sign-in Successful");
+      } catch (err) {
+        toast.error("Internal connection error");
+      }
     }
-  }, [oauth, router, searchParams]);
+  }, [accessToken, refreshToken, router, searchParams]);
 
   useEffect(() => {
     setTTasks(() => {

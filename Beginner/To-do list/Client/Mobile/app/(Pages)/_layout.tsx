@@ -60,7 +60,7 @@ const RootLayout = () => {
   const fetchUserTasks = async (tokenToUse: string) => {
       try {
         const fetchTasks = await fetch(
-            "http://192.168.0.12:4000/api/todos/get?type=all",
+            "https://task-tracker-production-227e.up.railway.app/api/todos/get?type=all",
             {
               method: "GET",
               headers: { Authorization: `Bearer ${tokenToUse}` },
@@ -76,7 +76,7 @@ const RootLayout = () => {
     refreshUserToken = async (refreshT: string | null) => {
       try {
         const response = await fetch(
-          "http://192.168.0.12:4000/api/auth/refresh",
+          "https://task-tracker-production-227e.up.railway.app/api/auth/refresh",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -103,10 +103,13 @@ const RootLayout = () => {
       if (!accessT) return;
 
       try {
-        const response = await fetch("http://192.168.0.12:4000/api/users/get", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${accessT}` },
-        });
+        const response = await fetch(
+          "https://task-tracker-production-227e.up.railway.app/api/users/get",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${accessT}` },
+          },
+        );
         const userData = await response.json();
 
         if (!response.ok) {

@@ -68,7 +68,7 @@ const Dashboard = (): React.ReactNode => {
         }
 
         const taskCreation: Response = await fetch(
-            "http://192.168.0.12:4000/api/todos/create",
+            "https://task-tracker-production-227e.up.railway.app/api/todos/create",
             {
               method: "POST",
               headers: {
