@@ -31,7 +31,7 @@ import {
 
 // 1. Move the logic into a separate inner component
 const DashboardContent = () => {
-  const { username, todos } = useProfile(),
+  const { username, todos, setTodos } = useProfile(),
     [todaysTasks, setTTasks] = useState<Todo[]>([]),
     [monthTasks, setMTasks] = useState<Todo[]>(),
     [completed, setCompleted] = useState<number>(0),
@@ -50,6 +50,18 @@ const DashboardContent = () => {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
 
+        const searchParamsForDeletion = new URLSearchParams(
+          searchParams.toString(),
+        );
+        searchParamsForDeletion.delete("accessToken");
+        searchParamsForDeletion.delete("refreshToken");
+
+        const newUrl = searchParamsForDeletion.toString()
+          ? `${window.location.pathname}?${searchParams.toString()}`
+          : window.location.pathname;
+
+        router.replace(newUrl);
+
         toast.success("Google sign-in Successful");
       } catch (err) {
         toast.error("Internal connection error");
@@ -65,24 +77,28 @@ const DashboardContent = () => {
         return taskDate.getDate() === today;
       });
     });
+
     setCompleted(
       todos.reduce(
         (count, todo) => (todo.status === "complete" ? count + 1 : count),
         0,
       ),
     );
+
     setInProgress(
       todos.reduce(
         (count, todo) => (todo.status === "in progress" ? count + 1 : count),
         0,
       ),
     );
+
     setCurrent(
       todos.reduce(
         (count, todo) => (todo.status === "incomplete" ? count + 1 : count),
         0,
       ),
     );
+
     setMTasks(() => {
       const today = new Date();
       return todos.filter((todo) => {
@@ -110,6 +126,7 @@ const DashboardContent = () => {
 
   const addTaskHandler = async () => {
     const accessToken = localStorage.getItem("accessToken");
+
     if (!accessToken) {
       toast.error("User not identified, log in or signup to continue");
       return;
@@ -126,12 +143,29 @@ const DashboardContent = () => {
         headers: { Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify(details),
       });
+
       const addResponse = await addRequest.json();
+
       if (!addRequest.ok) {
         toast.error(`${addResponse.error}`);
         return;
       }
+
       toast.success("Todo created");
+
+      const getTodos = await fetch("/api/todos", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const getResponse = await getTodos.json();
+
+      if (!getResponse.ok) {
+        toast.error(`Error: ${getResponse.error}`);
+        return;
+      }
+
+      setTodos(getResponse);
     } catch (error) {
       toast.error(`${(error as Error).message}`);
     }

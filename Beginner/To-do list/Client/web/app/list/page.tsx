@@ -65,7 +65,6 @@ import {
 } from "@/components/ui/select";
 import { useTheme } from "../_components/Theme";
 
-/* ---------- Helpers ---------- */
 function normalize(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -93,14 +92,14 @@ function isSameDay(a: Date, b: Date): boolean {
   return a.getTime() === b.getTime();
 }
 
-/* ---------- Components ---------- */
-
 const EditModal = ({
   todoId,
   modalVisibility,
+  setTodos,
 }: {
   todoId: string;
   modalVisibility: Dispatch<SetStateAction<boolean>>;
+  setTodos: Dispatch<SetStateAction<Todo[]>>;
 }): React.ReactNode => {
   const [newDetails, setDetails] = useState<Record<string, string>>({
     title: "",
@@ -118,15 +117,19 @@ const EditModal = ({
 
   const submitHandler = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       toast.error("User not identified, log in or signup to continue");
       return;
     }
+
     let filledDetails: Record<string, string> = {};
+
     for (let [key, value] of Object.entries(newDetails)) {
       if (value.trim().length > 0) filledDetails[key] = value;
     }
+
     filledDetails["id"] = todoId;
 
     try {
@@ -143,6 +146,20 @@ const EditModal = ({
       }
       toast.success("Task edited successfully");
       modalVisibility(false);
+
+      const getTodos = await fetch("/api/todos", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const getResponse = await getTodos.json();
+
+      if (!getResponse.ok) {
+        toast.error(`Error: ${getResponse.error}`);
+        return;
+      }
+
+      setTodos(getResponse);
     } catch (error) {
       toast.error(`${(error as Error).message}`);
     }
@@ -212,7 +229,6 @@ const EditModal = ({
   );
 };
 
-/* ---------- Filter Modal Component ---------- */
 const FilterModal = ({
   isOpen,
   onClose,
@@ -345,7 +361,7 @@ const FilterModal = ({
 
 /* ---------- Main Component ---------- */
 const TodoList = (): React.ReactNode => {
-  const { todos } = useProfile();
+  const { todos, setTodos } = useProfile();
   const { theme } = useTheme();
 
   // States
@@ -584,7 +600,13 @@ const TodoList = (): React.ReactNode => {
         applyFilters={applyFilters}
         setFilterDate={setFilterDate}
       />
-      {editModal && <EditModal modalVisibility={setVisible} todoId={editId} />}
+      {editModal && (
+        <EditModal
+          setTodos={setTodos}
+          modalVisibility={setVisible}
+          todoId={editId}
+        />
+      )}
     </div>
   );
 };
