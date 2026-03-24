@@ -67,14 +67,17 @@ export const PATCH = async (request: NextRequest) => {
   try {
     const requestBody = await request.json();
 
-    const updateRequest = await fetch("http://localhost:4000/api/users/edit", {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token.split(" ")[1]}`,
-          "Content-type": "application/json",
+    const updateRequest = await fetch(
+        "https://task-tracker-production-227e.up.railway.app/api/users/edit",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token.split(" ")[1]}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      }),
+      ),
       updateResponse = await updateRequest.json();
 
     if (!updateRequest.ok) {
@@ -123,7 +126,7 @@ export const DELETE = async (request: NextRequest) => {
 
   try {
     const deleteRequest: Response = await fetch(
-        "http://localhost:4000/api/users/delete",
+        "https://task-tracker-production-227e.up.railway.app/api/users/delete",
         {
           method: "DELETE",
           headers: {

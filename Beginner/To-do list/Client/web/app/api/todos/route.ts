@@ -119,7 +119,7 @@ export const POST = async (request: NextRequest) => {
     const todoBody = await request.json();
 
     const createTodoRequest: Response = await fetch(
-        "https://task-tracker-s8.up.railway.app/api/todos/create",
+        "https://task-tracker-production-227e.up.railway.app/api/todos/create",
         {
           method: "POST",
           headers: {
@@ -173,7 +173,7 @@ export const PATCH = async (request: NextRequest) => {
     const todoBody = await request.json();
 
     const updateTodoRequest: Response = await fetch(
-        "https://task-tracker-s8.up.railway.app/api/todos/edit",
+        "https://task-tracker-production-227e.up.railway.app/api/todos/edit",
         {
           method: "PATCH",
           headers: {
@@ -229,7 +229,7 @@ export const DELETE = async (request: NextRequest) => {
     const todoId = searchParams.get("todoid");
     console.log(todoId);
     const deleteTodoRequest: Response = await fetch(
-        `https://task-tracker-s8.up.railway.app/api/todos/delete?type=one&todoid=${todoId}`,
+        `https://task-tracker-production-227e.up.railway.app/api/todos/delete?type=one&todoid=${todoId}`,
         {
           method: "DELETE",
           headers: {

@@ -267,8 +267,6 @@ export const AuthController = (
         case "me":
           const rawCookie = request.headers.cookie;
 
-          console.log("Raw cookie:", rawCookie); // check what's actually coming in
-
           if (!rawCookie) {
             response.writeHead(404);
             response.end(JSON.stringify({ error: "No cookies found" }));
