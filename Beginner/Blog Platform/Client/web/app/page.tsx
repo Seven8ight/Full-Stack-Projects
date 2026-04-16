@@ -155,7 +155,7 @@ const Landing = (): React.ReactNode => {
             {/* Featured Post */}
             <div className="md:col-span-7 group cursor-pointer">
               <div className="bg-gray-200 aspect-video mb-6 overflow-hidden relative">
-                <div className="w-full h-full bg-gradient-to-tr from-orange-100 to-white group-hover:scale-105 transition-transform duration-700" />
+                <div className="w-full h-full bg-linear-to-tr from-orange-100 to-white group-hover:scale-105 transition-transform duration-700" />
                 {/* Mini Review Badge */}
                 <div className="absolute bottom-4 left-4 bg-white px-3 py-1 text-[10px] font-black uppercase tracking-tighter shadow-sm">
                   4.8 ★ (12 Reviews)

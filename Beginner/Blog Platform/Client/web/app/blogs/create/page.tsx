@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useRef, useState, JSX } from "react";
+import { useEffect, useRef, useState, JSX } from "react";
 import Navbar from "@/app/_Components/Navbar";
-import { Save, Eye, Trash2, X, Loader2 } from "lucide-react";
+import { Save, Eye, Trash2, X } from "lucide-react";
 
 /**
  * MINI RENDERER COMPONENT
@@ -61,7 +61,7 @@ const BlogPreviewRenderer = ({ data, title }: { data: any; title: string }) => {
                   <img
                     src={block.data.file.url}
                     alt={block.data.caption}
-                    className={`rounded-[2rem] border border-gray-100 dark:border-white/5 ${block.data.stretched ? "w-full" : "max-w-2xl mx-auto"}`}
+                    className={`rounded-4xl border border-gray-100 dark:border-white/5 ${block.data.stretched ? "w-full" : "max-w-2xl mx-auto"}`}
                   />
                   {block.data.caption && (
                     <figcaption className="text-center text-xs font-serif italic text-studio-accent mt-4">
@@ -204,13 +204,13 @@ const CreateBlog = () => {
         />
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
-          <div id="editorjs" className="min-h-[500px] studio-editor-ui" />
+          <div id="editorjs" className="min-h-125 studio-editor-ui" />
         </div>
       </section>
 
       {/* FULLSCREEN PREVIEW MODAL */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-background animate-in fade-in duration-300 overflow-y-auto">
+        <div className="fixed inset-0 z-100 flex flex-col bg-background animate-in fade-in duration-300 overflow-y-auto">
           <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-gray-100 dark:border-white/5 px-6 py-4 flex justify-between items-center">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
               Archive Draft Preview

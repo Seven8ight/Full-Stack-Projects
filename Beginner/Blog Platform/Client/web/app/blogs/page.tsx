@@ -39,14 +39,14 @@ const Recommendations = () => {
           Added overflow-hidden here. This is crucial—it acts as a mask for the hover gradient,
           making sure it follows the curves of the rounded-[3rem].
         */}
-        <div className="relative group overflow-hidden rounded-[3rem] bg-studio-green dark:bg-white/5 p-12 md:p-24 min-h-[500px] flex flex-col justify-end border border-transparent dark:border-white/10 transition-shadow hover:shadow-2xl hover:shadow-orange-500/10 duration-500">
+        <div className="relative group overflow-hidden rounded-[3rem] bg-studio-green dark:bg-white/5 p-12 md:p-24 min-h-125 flex flex-col justify-end border border-transparent dark:border-white/10 transition-shadow hover:shadow-2xl hover:shadow-orange-500/10 duration-500">
           {/* 2. The Fixed Hover Gradient:
             We removed the static rectangle and made this an atmospheric bloom.
             - It’s now positioned using inset-0 (covering the whole card but masked by overflow-hidden).
             - The background is a radial gradient that starts subtle.
             - On hover (group-hover), it expands (scale-125) and increases opacity.
           */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#fb923c20,_transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top_right,_#fb923c10,_transparent_70%)] opacity-0 group-hover:opacity-100 group-hover:scale-125 transition-all duration-1000 ease-in-out" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#fb923c20,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top_right,#fb923c10,transparent_70%)] opacity-0 group-hover:opacity-100 group-hover:scale-125 transition-all duration-1000 ease-in-out" />
 
           {/* CONTENT (Needs relative z-10 to stay on top) */}
           <div className="relative z-10 max-w-2xl">
@@ -95,8 +95,8 @@ const Recommendations = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {blogs.map((blog) => (
             <div key={blog.id} className="group cursor-pointer">
-              <div className="aspect-[4/5] bg-gray-100 dark:bg-[#121413] rounded-[2.5rem] mb-8 overflow-hidden relative border border-transparent dark:border-white/5 shadow-sm group-hover:shadow-xl group-hover:shadow-orange-500/5 transition-all duration-500">
-                <div className="absolute inset-0 bg-gradient-to-t from-studio-green/10 dark:from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="aspect-4/5 bg-gray-100 dark:bg-[#121413] rounded-[2.5rem] mb-8 overflow-hidden relative border border-transparent dark:border-white/5 shadow-sm group-hover:shadow-xl group-hover:shadow-orange-500/5 transition-all duration-500">
+                <div className="absolute inset-0 bg-linear-to-t from-studio-green/10 dark:from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-white/5 text-9xl font-serif italic select-none">
                   {blog.title.charAt(0)}
                 </div>

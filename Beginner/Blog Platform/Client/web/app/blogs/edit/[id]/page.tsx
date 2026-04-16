@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/_Components/Navbar";
 import { Save, Eye, ChevronLeft, Loader2 } from "lucide-react";
@@ -158,7 +158,7 @@ const EditBlog = () => {
         />
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
-          <div id="editorjs" className="min-h-[500px]" />
+          <div id="editorjs" className="min-h-125" />
         </div>
       </section>
     </main>

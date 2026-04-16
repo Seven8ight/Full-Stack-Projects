@@ -104,7 +104,7 @@ const SearchPage = () => {
               className="group relative border-b border-gray-100 dark:border-white/5 py-12 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer hover:px-4 transition-all duration-500"
             >
               {/* Hover Background Accent */}
-              <div className="absolute inset-0 bg-studio-accent/0 group-hover:bg-studio-accent/[0.02] -z-10 transition-all rounded-3xl" />
+              <div className="absolute inset-0 bg-studio-accent/0 group-hover:bg-studio-accent/2 -z-10 transition-all rounded-3xl" />
 
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-3">
@@ -121,7 +121,7 @@ const SearchPage = () => {
               </div>
 
               <div className="flex items-center gap-8">
-                <div className="hidden md:block w-32 h-[1px] bg-gray-100 dark:bg-white/5 group-hover:w-48 transition-all duration-700 group-hover:bg-studio-accent" />
+                <div className="hidden md:block w-32 h-px bg-gray-100 dark:bg-white/5 group-hover:w-48 transition-all duration-700 group-hover:bg-studio-accent" />
                 <div className="w-12 h-12 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center group-hover:bg-studio-green group-hover:text-background transition-all">
                   <ArrowUpRight size={20} />
                 </div>

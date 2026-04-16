@@ -47,7 +47,7 @@ const Navbar = () => {
             <Search size={18} strokeWidth={2.5} />
           </Link>
 
-          <div className="h-4 w-[1px] bg-black/10 dark:bg-white/10" />
+          <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
 
           {/* Theme Toggle */}
           <button
@@ -55,7 +55,7 @@ const Navbar = () => {
             className="text-foreground/60 hover:text-studio-accent transition-all active:scale-90"
           >
             {!mounted ? (
-              <div className="w-[18px] h-[18px]" />
+              <div className="w-4.5 h-4.5" />
             ) : theme === "dark" ? (
               <Sun size={18} strokeWidth={2.5} />
             ) : (

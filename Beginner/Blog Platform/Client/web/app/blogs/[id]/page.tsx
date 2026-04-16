@@ -58,7 +58,7 @@ const BlogDetail = () => {
       <article className="max-w-3xl mx-auto px-6">
         <div className="aspect-video bg-gray-100 dark:bg-white/5 rounded-[2.5rem] mb-16 overflow-hidden border border-gray-100 dark:border-white/5">
           {/* Main Blog Image Placeholder */}
-          <div className="w-full h-full flex items-center justify-center text-gray-200 dark:text-white/5 text-8xl font-serif italic italic">
+          <div className="w-full h-full flex items-center justify-center text-gray-200 dark:text-white/5 text-8xl font-serif italic">
             Art.
           </div>
         </div>
@@ -104,7 +104,7 @@ const BlogDetail = () => {
             <button className="flex items-center gap-2 text-gray-400 hover:text-studio-accent transition-colors">
               <ThumbsDown size={20} />
             </button>
-            <div className="h-4 w-[1px] bg-gray-100 dark:bg-white/10" />
+            <div className="h-4 w-px bg-gray-100 dark:bg-white/10" />
             <div className="flex items-center gap-2 text-gray-400">
               <MessageSquare size={20} />
               <span className="text-xs font-black">24</span>
@@ -122,7 +122,7 @@ const BlogDetail = () => {
 
           <div className="space-y-8">
             <div className="flex gap-4 p-6 bg-surface rounded-3xl border border-black/5 dark:border-white/10">
-              <div className="w-10 h-10 rounded-full bg-studio-green flex-shrink-0" />
+              <div className="w-10 h-10 rounded-full bg-studio-green shrink-0" />
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <span className="text-xs font-black uppercase tracking-widest">

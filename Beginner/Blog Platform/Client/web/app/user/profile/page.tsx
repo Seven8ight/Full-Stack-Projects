@@ -96,7 +96,7 @@ const ProfilePage = () => {
         </div>
 
         <div className="md:col-span-8">
-          <div className="bg-gray-50 dark:bg-white/5 rounded-[2rem] p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
+          <div className="bg-gray-50 dark:bg-white/5 rounded-4xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
             <p className="text-gray-400 font-serif italic">
               Your published stories will appear here.
             </p>
@@ -112,7 +112,7 @@ const ProfilePage = () => {
 
       {/* EDIT PROFILE MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center px-4">
           <div
             className="absolute inset-0 bg-studio-green/90 dark:bg-black/95 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
