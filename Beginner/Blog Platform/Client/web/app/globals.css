@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+/* =========================
+   THEME VARIABLES
+========================= */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdfcfb;
+  --foreground: #1a1a1a;
+  --studio-green: #0d2c24;
+  --studio-accent: #ea580c;
+
+  /* IMPORTANT: define surface in light mode */
+  --surface: #ffffff;
 }
 
+.dark {
+  --background: #080a09;
+  --foreground: #d1d5db;
+  --studio-green: #ffffff;
+  --studio-accent: #fb923c;
+  --surface: #121413;
+}
+
+/* =========================
+   TAILWIND MAPPING
+========================= */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-studio-green: var(--studio-green);
+  --color-studio-accent: var(--studio-accent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* =========================
+   GLOBAL BASE
+========================= */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* =========================
+   EDITOR.JS OVERRIDES
+========================= */
+
+/* Layout */
+.ce-block__content,
+.ce-toolbar__content {
+  max-width: 100% !important;
+}
+
+/* Headers */
+.ce-header {
+  font-family: serif;
+  font-style: italic;
+  color: var(--studio-green);
+}
+
+/* Placeholder text */
+.codex-editor--empty .ce-paragraph:before {
+  color: var(--foreground);
+  opacity: 0.4;
+  font-style: italic;
+}
+
+/* Toolbar (dark mode) */
+.dark .ce-toolbar__plus,
+.dark .ce-toolbar__settings-btn {
+  background-color: var(--surface);
+  color: var(--foreground);
+}
+
+/* Popover (dark mode) */
+.dark .ce-popover {
+  background-color: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
 }
